@@ -3,6 +3,8 @@ File: skeet.py
 Original Author: Br. Burton
 Designed to be completed by others
 
+Others being: N. Johnston
+
 This program implements an awesome version of skeet.
 """
 import arcade
@@ -27,12 +29,74 @@ TARGET_SAFE_COLOR = arcade.color.AIR_FORCE_BLUE
 TARGET_SAFE_RADIUS = 15
 
 
+class Point:
+    """ The Point Class, defines a co-ordinate pair on the SCREEN """
+
+    def __init__(self, start_x=0, start_y=0):
+        """ initiate values """
+        self.x = start_x
+        self.y = start_y
+
+
+class Velocity:
+    """ The Velocity Class, defines the speed and direction of an object's motion """
+
+    def __init__(self, start_dx=uniform(0.01, 4), start_dy=uniform(-2, 2)):
+        """ initiate values """
+        self.dx = start_dx
+        self.dy = start_dy
+
+    def increment(self, value):
+        """ increase vector magnitude, maintain semblance of direction """
+        if self.dx > 0:
+            self.dx += value
+        else:
+            self.dx += -value
+        if self.dy > 0:
+            self.dy += value
+        else:
+            self.dy += -value
+
+
+class FlyingObject:
+    """ These 'fly' across the playing field, and die when they reach The Other Side 
+
+    center : Point
+    velocity : Velocity
+    radius : float
+    __init__()
+    advance() : None
+    draw() : None
+    is_off_screen(screen_width, screen_height) : Boolean
+    """
+
+    def __init__(self):
+        """ initialize object values """
+        self.center = Point()
+        self.velocity = Velocity()
+        self.radius = 10
+
+    def advance(self, value):
+        """ Move the object across the field """
+        self.velocity.increment(value)
+
+    def draw(self):
+        """ Draw self on field """
+        arcade.draw_circle_outline(
+            self.center.x, self.center.y, self.radius, TARGET_COLOR)
+
+# class Bullet:
+# class Target:
+# class StrongTarget(Target):
+# class StandardTarget(Target):
+# class SafeTarget(Target):
 
 
 class Rifle:
     """
     The rifle is a rectangle that tracks the mouse.
     """
+
     def __init__(self):
         self.center = Point()
         self.center.x = 0
@@ -41,7 +105,8 @@ class Rifle:
         self.angle = 45
 
     def draw(self):
-        arcade.draw_rectangle_filled(self.center.x, self.center.y, RIFLE_WIDTH, RIFLE_HEIGHT, RIFLE_COLOR, 360-self.angle)
+        arcade.draw_rectangle_filled(
+            self.center.x, self.center.y, RIFLE_WIDTH, RIFLE_HEIGHT, RIFLE_COLOR, 360-self.angle)
 
 
 class Game(arcade.Window):
@@ -75,8 +140,7 @@ class Game(arcade.Window):
 
         self.bullets = []
 
-        # TODO: Create a list for your targets (similar to the above bullets)
-
+        self.targets = []
 
         arcade.set_background_color(arcade.color.WHITE)
 
@@ -95,8 +159,8 @@ class Game(arcade.Window):
         for bullet in self.bullets:
             bullet.draw()
 
-        # TODO: iterate through your targets and draw them...
-
+        for target in self.targets:
+            target.draw()
 
         self.draw_score()
 
@@ -107,7 +171,8 @@ class Game(arcade.Window):
         score_text = "Score: {}".format(self.score)
         start_x = 10
         start_y = SCREEN_HEIGHT - 20
-        arcade.draw_text(score_text, start_x=start_x, start_y=start_y, font_size=12, color=arcade.color.NAVY_BLUE)
+        arcade.draw_text(score_text, start_x=start_x, start_y=start_y,
+                         font_size=12, color=arcade.color.NAVY_BLUE)
 
     def update(self, delta_time):
         """
@@ -124,7 +189,8 @@ class Game(arcade.Window):
         for bullet in self.bullets:
             bullet.advance()
 
-        # TODO: Iterate through your targets and tell them to advance
+        for target in self.targets:
+            target.advance()
 
     def create_target(self):
         """
@@ -133,6 +199,20 @@ class Game(arcade.Window):
         """
 
         # TODO: Decide what type of target to create and append it to the list
+        spawn_type = random.uniform(-2, 7)
+
+        # low type == low points
+        if spawn_type < 0:
+            target = SafeTarget()
+        # high grade == many points
+        elif spawn_type > 5:
+            target = StrongTarget()
+        else:
+            target = StandardTarget()
+
+        # TODO: add trajectory
+
+        # TODO: add target to the queue
 
     def check_collisions(self):
         """
@@ -140,8 +220,6 @@ class Game(arcade.Window):
         Updates scores and removes dead items.
         :return:
         """
-
-        # NOTE: This assumes you named your targets list "targets"
 
         for bullet in self.bullets:
             for target in self.targets:
@@ -151,7 +229,7 @@ class Game(arcade.Window):
                     too_close = bullet.radius + target.radius
 
                     if (abs(bullet.center.x - target.center.x) < too_close and
-                                abs(bullet.center.y - target.center.y) < too_close):
+                            abs(bullet.center.y - target.center.y) < too_close):
                         # its a hit!
                         bullet.alive = False
                         self.score += target.hit()
@@ -190,10 +268,14 @@ class Game(arcade.Window):
                 self.targets.remove(target)
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        """ stuff done when the mouse moves """
+
         # set the rifle angle in degrees
         self.rifle.angle = self._get_angle_degrees(x, y)
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        """ clickety clickety clickety """
+
         # Fire!
         angle = self._get_angle_degrees(x, y)
 
@@ -202,13 +284,14 @@ class Game(arcade.Window):
 
         self.bullets.append(bullet)
 
-    def _get_angle_degrees(self, x, y):
+    @staticmethod
+    def _get_angle_degrees(x, y):
         """
         Gets the value of an angle (in degrees) defined
         by the provided x and y.
 
-        Note: This could be a static method, but we haven't
-        discussed them yet...
+        Note: This is a static method.
+        We haven't discussed them yet.
         """
         # get the angle in radians
         angle_radians = math.atan2(y, x)
@@ -217,6 +300,7 @@ class Game(arcade.Window):
         angle_degrees = math.degrees(angle_radians)
 
         return angle_degrees
+
 
 # Creates the game and starts it going
 window = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
