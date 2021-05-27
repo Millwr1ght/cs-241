@@ -45,9 +45,7 @@ class HelpSystem:
 
     def is_student_waiting(self):
         """ if sutudent at end of list, then no """
-        if len(self.waiting_list) > 0:
-            return True
-        return False
+        return len(self.waiting_list) > 0
 
     def add_to_waiting_list(self, student):
         """ add a Student to the wait deque """
