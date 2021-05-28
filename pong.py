@@ -320,7 +320,7 @@ class Pong(arcade.Window):
         # LEFT, DOWN, A, S
         if key == arcade.key.LEFT or key == arcade.key.DOWN or key == arcade.key.S or key == arcade.key.A:
             self.holding_left = False
-        
+
         # RIGHT, UP, W, D
         if key == arcade.key.RIGHT or key == arcade.key.UP or key == arcade.key.W or key == arcade.key.D:
             self.holding_right = False
