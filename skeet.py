@@ -10,6 +10,7 @@ This program implements an awesome version of skeet.
 import arcade
 import math
 import random
+from abc import ABC, abstractmethod
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 600
@@ -25,6 +26,7 @@ BULLET_SPEED = 10
 
 TARGET_RADIUS = 20
 TARGET_COLOR = arcade.color.CARROT_ORANGE
+TARGET_STRONG_COLOR = arcade.color.CINNABAR
 TARGET_SAFE_COLOR = arcade.color.AIR_FORCE_BLUE
 TARGET_SAFE_RADIUS = 15
 
@@ -41,55 +43,187 @@ class Point:
 class Velocity:
     """ The Velocity Class, defines the speed and direction of an object's motion """
 
-    def __init__(self, start_dx=uniform(0.01, 4), start_dy=uniform(-2, 2)):
+    def __init__(self, start_dx: float = random.uniform(0.01, 4), start_dy: float = random.uniform(-2, 2)):
         """ initiate values """
         self.dx = start_dx
         self.dy = start_dy
-
-    def increment(self, value):
-        """ increase vector magnitude, maintain semblance of direction """
-        if self.dx > 0:
-            self.dx += value
-        else:
-            self.dx += -value
-        if self.dy > 0:
-            self.dy += value
-        else:
-            self.dy += -value
 
 
 class FlyingObject:
     """ These 'fly' across the playing field, and die when they reach The Other Side 
 
-    center : Point
-    velocity : Velocity
-    radius : float
+    center : Point --> all start at (0,0) unless otherwise specified
+    velocity : Velocity --> all have no speed, ---^
+    radius : float --> all 10 unless ---------^
     __init__()
     advance() : None
     draw() : None
     is_off_screen(screen_width, screen_height) : Boolean
     """
 
-    def __init__(self):
+    def __init__(self, x: int = 0, y: int = 0, dx: float = 0, dy: float = 0, radius: int = TARGET_RADIUS, color=TARGET_COLOR):
         """ initialize object values """
-        self.center = Point()
-        self.velocity = Velocity()
-        self.radius = 10
+        self.center = Point(start_x=x, start_y=y)
+        self.velocity = Velocity(dx, dy)
+        self.radius = radius
+        self.color = color
+        self.alive = True
 
-    def advance(self, value):
+    def advance(self):
         """ Move the object across the field """
-        self.velocity.increment(value)
+        self.center.x += self.velocity.dx
+        self.center.y += self.velocity.dy
 
     def draw(self):
         """ Draw self on field """
-        arcade.draw_circle_outline(
-            self.center.x, self.center.y, self.radius, TARGET_COLOR)
+        arcade.draw_circle_filled(
+            self.center.x, self.center.y,
+            self.radius, self.color)
 
-# class Bullet:
-# class Target:
-# class StrongTarget(Target):
-# class StandardTarget(Target):
-# class SafeTarget(Target):
+    def is_off_screen(self, width, height):
+        """ checks if the object has left the premises 
+        returns : Boolean
+        """
+        return self.center.x > width or self.center.y > height
+
+
+class Bullet(FlyingObject):
+    """ the shoot shoot missile class 
+    fire(angle:float) : None
+    """
+
+    def __init__(self):
+        """ setup variables """
+        # initialize center, velocity, radius, color
+        super().__init__(color=BULLET_COLOR, radius=BULLET_RADIUS, x=0, y=0)
+
+    def fire(self, angle: float):
+        """ shoot the bullet based on the given angle, in degrees """
+        self.velocity.dx = math.cos(math.radians(angle)) * BULLET_SPEED
+        self.velocity.dy = math.sin(math.radians(angle)) * BULLET_SPEED
+
+
+class Target(FlyingObject, ABC):
+    """ the get shot missile-ish class
+    there are three types/subclasses: strong, safe, standard
+
+    alive : Boolean
+    hit() : int
+    launch() : None
+    """
+
+    def __init__(self, t_color=TARGET_COLOR, t_radius=TARGET_RADIUS, t_spawn=SCREEN_HEIGHT//2):
+        """ setup variables """
+        # initialize center, velocity, radius, color
+        super().__init__(color=t_color, radius=t_radius, y=t_spawn)
+
+    def launch(self):
+        """ Target's version of Bullet's fire()
+        sets the projectile's velocity
+        safe and standard go fast, strong ones go slow
+        """
+        # standard speed
+        self.velocity.dx = random.uniform(1, 5)
+        self.velocity.dy = random.uniform(-2, 5)
+
+    @abstractmethod  # Decorator to define an abstract method
+    def hit(self):
+        """ represents the target being hit
+        should either kill the target 
+        (or decrement the number of hits remaining for the strong target) 
+        and return an integer representing the points scored for that hit.
+        """
+        pass
+
+
+class StandardTarget(Target):
+    """ Standard Target Class
+    Rendered as a circle with a 20px diameter.
+    Destroyed with one hit.
+    1 point is awarded for hitting it.
+    """
+
+    def __init__(self, height):
+        """ setup variables """
+        super().__init__(t_spawn=height)
+
+    def hit(self):
+        """ target got shot
+        Target dies. 
+        Returns 1 point
+        """
+        self.alive = False
+        return 1
+
+
+class StrongTarget(Target):
+    """ the STRONG target
+    has 3 hp
+    hp is drawn on self
+    """
+
+    def __init__(self, height):
+        """ setup variables """
+        super().__init__(t_color=TARGET_STRONG_COLOR,
+                         t_spawn=height)
+
+        self.hit_points = 2
+
+    def draw(self):
+        """ a Target, but with a number """
+        super().draw()  # base target image
+        text_x = self.center.x
+        text_y = self.center.y
+        arcade.draw_text(repr(self.hit_points+1), text_x, text_y,
+                         arcade.color.CLARET, font_size=20,
+                         align="center", anchor_x="center", anchor_y="center")
+
+    def launch(self):
+        """ the STRONG launcher 
+        sets velocity to a slower speed
+        """
+        # slow down speed
+        self.velocity.dx = random.uniform(1, 3)
+        self.velocity.dy = random.uniform(-2, 3)
+
+    def hit(self):
+        """ Strong target was hit! Not very effective...
+        decrements the number of hits remaining
+        Returns the points scored for that hit: 1 if not dead, 5 if so
+        """
+        if self.hit_points < 1:
+            self.alive = False
+            return 5
+        else:
+            self.hit_points -= 1
+            return 1
+
+
+class SafeTarget(Target):
+    """ the 'safe' target class
+    is not remotely safe to hit
+    do not touch with bullet
+    1 hit kill, -5 points awarded
+    """
+
+    def __init__(self, height):
+        """ setup variables """
+        super().__init__(t_color=TARGET_SAFE_COLOR,
+                         t_radius=TARGET_SAFE_RADIUS,
+                         t_spawn=height)
+
+    def draw(self):
+        """ draw the safe blue square """
+        arcade.draw_rectangle_filled(
+            self.center.x, self.center.y, self.radius, self.radius, self.color)
+
+    def hit(self):
+        """ represents the target being hit
+        kills the target and returns an integer representing the points scored for that hit
+        that integer is -10
+        """
+        self.alive = False
+        return -10
 
 
 class Rifle:
@@ -105,8 +239,9 @@ class Rifle:
         self.angle = 45
 
     def draw(self):
-        arcade.draw_rectangle_filled(
-            self.center.x, self.center.y, RIFLE_WIDTH, RIFLE_HEIGHT, RIFLE_COLOR, 360-self.angle)
+        arcade.draw_rectangle_filled(self.center.x, self.center.y,
+                                     RIFLE_WIDTH, RIFLE_HEIGHT,
+                                     RIFLE_COLOR, 360-self.angle)
 
 
 class Game(arcade.Window):
@@ -198,21 +333,26 @@ class Game(arcade.Window):
         :return:
         """
 
-        # TODO: Decide what type of target to create and append it to the list
+        # Decide what type of target to create and append it to the list
         spawn_type = random.uniform(-2, 7)
+        spawn_height = random.uniform(SCREEN_HEIGHT//2, SCREEN_HEIGHT)
 
-        # low type == low points
+        # low type == high points, slower
         if spawn_type < 0:
-            target = SafeTarget()
-        # high grade == many points
+            target = StrongTarget(spawn_height)
+
+        # high grade == lower points, faster
         elif spawn_type > 5:
-            target = StrongTarget()
+            target = SafeTarget(spawn_height)
+        # else: meh == 1 point
         else:
-            target = StandardTarget()
+            target = StandardTarget(spawn_height)
 
-        # TODO: add trajectory
+        # PULL!
+        target.launch()
 
-        # TODO: add target to the queue
+        # target is in the air
+        self.targets.append(target)
 
     def check_collisions(self):
         """
@@ -276,8 +416,12 @@ class Game(arcade.Window):
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         """ clickety clickety clickety """
 
+        # TODO: while mouse down, bullet hell spam/auto-fire?
+
         # Fire!
         angle = self._get_angle_degrees(x, y)
+
+        # TODO: make the bullets spawn at the end of the Rifle
 
         bullet = Bullet()
         bullet.fire(angle)
