@@ -1,0 +1,32 @@
+Your Name: Nathan Johnston
+
+1. Give a specific example of a time when you might want to override a method from a base class.
+      - If you want the subclass to do something different when a bases method is called, then you override it.
+        For example: in the skeet.py game, the safe targets are blue squares instead of orange circles so you would override the base draw() method and draw a square instead 
+
+2. Do you think IS-A or HAS-A is a better choice for the team activity (Circles and Points)? Why?
+      - I say it depends on what you want it to do. For the case of Circles and Points, I think IS-A is the better class setup choice, because less code is used and from a design standpoint, these circles are just big points. For a larger project like the skeet.py shooter, I would say HAS-A would work better, because each drawn object HAS-A center point around which their drawn, not each object IS-A centre point.
+
+3. What is the most interesting thing you learned as a part of your work for this class this week?
+      - A couple things: Class methods, Static methods and abstract methods.
+         -- normal methods in a class are bound to every instance of the class and can only be accessed by instances of the class. These use the 'self' parameter.
+         -- Class methods are accesible by the class itself. These use the 'cls' parameter. This is useful for making more ways to __init__ the class
+         -- Static methods are methods that don't take a 'self' or 'cls' parameter and don't affect the class/instance in any way. This is useful for ulitities (like the angle_in_degrees() method in skeet.py)
+         -- Abstract methods serve as blank methods for subclasses to override, especially if the base class isn't going to exist by itself anyway (called an abstract class) 
+
+4. Describe one specific way that you helped someone else this week, or reached out for help.
+      - I've been answering people's questions on Slack all week. Particularly on Monday, Yennyffer and Vaughn both reached out to me with specific questions about errors they were getting with their pong.py code (It was the same error, it would have been more beneficial to read and post in #help. Also they both thought I was the TA).
+
+5. Are there any topics from this week that you still feel uneasy about, or would like to learn more about?
+      - I want to learn more about sprites. And adding sound.
+
+6. How much time did you spend this week on each of the following:
+
+Reading - 2hr
+Checkpoint A - 30m 
+Checkpoint B - 30m
+Team Activity - 1hr
+Data Structures Homework - 1hr
+Prove Assignment - 3hr
+
+If you have other questions or comments for the instructor, please post them to Slack, either in the general channel if others can benefit, or as a direct message if the matter is more personal.
