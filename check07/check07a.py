@@ -9,7 +9,7 @@ Author: Nathan Johsnton
 
 # : Create a base car class here
 class Car:
-    """ the Car class.
+    """ the Car class
     name : string
     __init__()
     get_door_specs() : string
