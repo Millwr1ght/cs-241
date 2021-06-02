@@ -1,6 +1,6 @@
 """
 File: check07b.py
-Author: Br. Burton
+Author: Br. Burton, N Johnston
 
 Demonstrates abstract base classes.
 """
@@ -17,7 +17,7 @@ class Shape(ABC):
     def display(self):
         print(f"{self.name} - {self.get_area():.2f}")
 
-    # TODO: Add an abstractmethod here called get_area
+    # : Add an abstractmethod here called get_area
     @abstractmethod
     def get_area(self):
         """ """

@@ -2,11 +2,12 @@
 File: check07a.py
 
 Starting template for your checkpoint assignment.
+
+Author: Nathan Johsnton
 """
 
-# TODO: Create a base car class here
 
-
+# : Create a base car class here
 class Car:
     """ the Car class.
     name : string
@@ -22,9 +23,8 @@ class Car:
         """ """
         return 'Unknown door specs'
 
-# TODO: Create a civic class here
 
-
+# : Create a civic class here
 class Civic(Car):
     """ the honda civic class
     name : str
@@ -42,9 +42,8 @@ class Civic(Car):
         """ retruns a specific str """
         return "4 doors"
 
-# TODO: Create an Odyssey class here
 
-
+# : Create an Odyssey class here
 class Odyssey(Car):
     """ the honda odyssey class 
     name : str
@@ -63,7 +62,7 @@ class Odyssey(Car):
         return "2 front doors, 2 sliding doors, 1 tail gate"
 
 
-# TODO: Create a Ferrari class here
+# : Create a Ferrari class here
 class Ferrari(Car):
     """ the ferrari class
     name : str
@@ -80,6 +79,8 @@ class Ferrari(Car):
     def get_door_specs(self):
         """ retruns a specific str """
         return "2 butterfly doors"
+
+# : Create attach_doors() function (not a class method or therwise part of a class)
 
 
 def attach_doors(car):
