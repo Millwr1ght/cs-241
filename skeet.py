@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 500
+SCREEN_TITLE = 'Awesome-er Version of Skeet | N. Johnston'
 
 RIFLE_WIDTH = 100
 RIFLE_HEIGHT = 20
@@ -92,15 +93,47 @@ class Bullet(FlyingObject):
     fire(angle:float) : None
     """
 
-    def __init__(self):
+    def __init__(self, spawn_x, spawn_y):
         """ setup variables """
         # initialize center, velocity, radius, color
-        super().__init__(color=BULLET_COLOR, radius=BULLET_RADIUS, x=0, y=0)
+        super().__init__(x=spawn_x, y=spawn_y)
+
+        self.color = BULLET_COLOR
+        self.radius = BULLET_RADIUS
 
     def fire(self, angle: float):
-        """ shoot the bullet based on the given angle, in degrees """
-        self.velocity.dx = math.cos(math.radians(angle)) * BULLET_SPEED
-        self.velocity.dy = math.sin(math.radians(angle)) * BULLET_SPEED
+        """ shoot the bullet based on the given angle, in degrees 
+        if necessary, increase radius and decrease speed by relevant multipliers
+        """
+        self.velocity.dx = math.cos(math.radians(
+            angle)) * BULLET_SPEED
+        self.velocity.dy = math.sin(math.radians(
+            angle)) * BULLET_SPEED
+
+
+class ChargedBullet(Bullet):
+    """ the Charged shot bullet class
+    delay from left mouse hold to release is proportionate to bullet size and speed
+    """
+
+    def __init__(self, x, y, multiplier):
+        """ setup variables """
+        # initialize center, velocity, radius, color
+        super().__init__(spawn_x=x, spawn_y=y)
+
+        self.multiplier = 1 + multiplier
+        self.hit_points = 0.5 * multiplier
+
+    def fire(self, angle: float):
+        """ shoot the bullet based on the given angle, in degrees 
+        increases radius and decreases speed by multiplier
+        """
+        self.radius *= self.multiplier
+
+        self.velocity.dx = math.cos(math.radians(
+            angle)) * BULLET_SPEED / self.multiplier
+        self.velocity.dy = math.sin(math.radians(
+            angle)) * BULLET_SPEED / self.multiplier
 
 
 class Target(FlyingObject, ABC):
@@ -262,13 +295,13 @@ class Game(arcade.Window):
     must add code to.
     """
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, title):
         """
         Sets up the initial conditions of the game
         :param width: Screen width
         :param height: Screen height
         """
-        super().__init__(width, height)
+        super().__init__(width, height, title)
 
         self.rifle = Rifle()
         self.score = 0
@@ -276,6 +309,17 @@ class Game(arcade.Window):
         self.bullets = []
 
         self.targets = []
+
+        self.weapon_list = ['Single Fire', 'Rapid Fire', 'Burst Fire']
+        self.weapon = 0
+
+        self.rapid_fire = False
+        self.rapid_delay = 0
+
+        self.burst_fire_charging = False
+        self.burst_delay = 0  # burst size and speed are proportional to delay length
+
+        self.debug = False
 
         arcade.set_background_color(arcade.color.WHITE)
 
@@ -289,7 +333,6 @@ class Game(arcade.Window):
         arcade.start_render()
 
         # draw each object
-        self.rifle.draw()
 
         for bullet in self.bullets:
             bullet.draw()
@@ -297,7 +340,14 @@ class Game(arcade.Window):
         for target in self.targets:
             target.draw()
 
+        self.rifle.draw()
+
         self.draw_score()
+
+        self.draw_weapon_name()
+
+        if self.debug:
+            self.draw_debug()
 
     def draw_score(self):
         """
@@ -307,6 +357,26 @@ class Game(arcade.Window):
         start_x = 10
         start_y = SCREEN_HEIGHT - 20
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y,
+                         font_size=12, color=arcade.color.NAVY_BLUE)
+
+    def draw_weapon_name(self):
+        """
+        Puts the current weapon type on the screen
+        """
+        weapon_text = f'Weapon type: {self.weapon_list[self.weapon]}'
+        start_x = SCREEN_WIDTH - 170
+        start_y = SCREEN_HEIGHT - 20
+        arcade.draw_text(weapon_text, start_x=start_x, start_y=start_y,
+                         font_size=12, color=arcade.color.NAVY_BLUE)
+
+    def draw_debug(self):
+        """
+        draw debug information on screen
+        """
+        debug_text = f'debug: Burst: {self.burst_fire_charging}, {self.burst_delay}'
+        start_x = SCREEN_WIDTH - 170
+        start_y = SCREEN_HEIGHT - 35
+        arcade.draw_text(debug_text, start_x=start_x, start_y=start_y,
                          font_size=12, color=arcade.color.NAVY_BLUE)
 
     def update(self, delta_time):
@@ -320,6 +390,18 @@ class Game(arcade.Window):
         # decide if we should start a target
         if random.randint(1, 50) == 1:
             self.create_target()
+
+        # non-standard firing logic
+        if self.rapid_fire:
+            self.rapid_delay += 1
+            # every 4 frames, shoot once, cycle counter
+            if self.rapid_delay % 5 == 0:
+                self.make_bullet(self.rifle.angle)
+                self.rapid_delay = 0
+
+        elif self.burst_fire_charging and self.burst_delay < 12:
+            # increase delay counter for every frame of charging
+            self.burst_delay += 0.1
 
         for bullet in self.bullets:
             bullet.advance()
@@ -354,6 +436,32 @@ class Game(arcade.Window):
         # target is in the air
         self.targets.append(target)
 
+    def make_bullet(self, angle):
+        """ 
+        make a bullet! make many bullet!
+        :return:
+        """
+        # find the spawn point
+        x, y = self._get_coords_from_angle(angle, RIFLE_WIDTH//2)
+
+        bullet = Bullet(x, y)
+        bullet.fire(angle)
+
+        self.bullets.append(bullet)
+
+    def make_charged_bullet(self, angle):
+        """ 
+        make a big bullet
+        :return:
+        """
+        # find the spawn point
+        x, y = self._get_coords_from_angle(angle, RIFLE_WIDTH//2)
+
+        bullet = ChargedBullet(x, y, self.burst_delay)
+        bullet.fire(angle)
+
+        self.bullets.append(bullet)
+
     def check_collisions(self):
         """
         Checks to see if bullets have hit targets.
@@ -371,7 +479,9 @@ class Game(arcade.Window):
                     if (abs(bullet.center.x - target.center.x) < too_close and
                             abs(bullet.center.y - target.center.y) < too_close):
                         # its a hit!
+
                         bullet.alive = False
+
                         self.score += target.hit()
 
                         # We will wait to remove the dead objects until after we
@@ -416,17 +526,57 @@ class Game(arcade.Window):
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         """ clickety clickety clickety """
 
-        # TODO: while mouse down, bullet hell spam/auto-fire?
+        # right click switches weapon between single fire, rapid fire and burst fire
+        if button == arcade.MOUSE_BUTTON_RIGHT:
+            self.weapon = (self.weapon + 1) % 3
 
-        # Fire!
-        angle = self._get_angle_degrees(x, y)
+        # Left click fire!
+        elif button == arcade.MOUSE_BUTTON_LEFT:
 
-        # TODO: make the bullets spawn at the end of the Rifle
+            # get the mouse angle
+            angle = self._get_angle_degrees(x, y)
 
-        bullet = Bullet()
-        bullet.fire(angle)
+            # Rapid fire mechanics
+            if self.weapon == 1:
+                # while mouse down, bullet hell spam and/or auto-fire?
+                self.rapid_fire = True
 
-        self.bullets.append(bullet)
+            # burst fire mechanics
+            elif self.weapon == 2:
+                # while mouse down, charge the burst
+                self.burst_fire_charging = True
+
+            # standard rate of fire
+            elif self.weapon == 0:
+                # Fire!
+                self.make_bullet(angle)
+
+    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
+        """ release the clickety """
+
+        if self.weapon == 1:
+            # end rapid fire
+            self.rapid_fire = False
+
+        elif self.weapon == 2:
+            # get the mouse angle
+            angle = self._get_angle_degrees(x, y)
+
+            # Fire!
+            self.make_charged_bullet(angle)
+
+            # and release
+            self.burst_fire_charging = False
+            self.burst_delay = 1
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        """
+        keyboard operations
+        """
+        if not self.debug and symbol == arcade.key.D:
+            self.debug = True
+        elif symbol == arcade.key.D:
+            self.debug = False
 
     @staticmethod
     def _get_angle_degrees(x, y):
@@ -445,7 +595,17 @@ class Game(arcade.Window):
 
         return angle_degrees
 
+    @staticmethod
+    def _get_coords_from_angle(angle, width):
+        """ get the co-ordinates fir the end of the barrel """
+        angle_radians = math.radians(angle)
+
+        x = width * math.cos(angle_radians)
+        y = width * math.sin(angle_radians)
+
+        return x, y
+
 
 # Creates the game and starts it going
-window = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
+window = Game(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 arcade.run()
