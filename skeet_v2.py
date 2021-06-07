@@ -44,7 +44,7 @@ class Point:
 class Velocity:
     """ The Velocity Class, defines the speed and direction of an object's motion """
 
-    def __init__(self, start_dx: float = random.uniform(0.01, 4), start_dy: float = random.uniform(-2, 2)):
+    def __init__(self, start_dx: float = random.uniform(-1, 4), start_dy: float = random.uniform(-2, 2)):
         """ initiate values """
         self.dx = start_dx
         self.dy = start_dy
