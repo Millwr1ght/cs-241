@@ -6,9 +6,10 @@ This program implements the asteroids game.
 """
 import arcade
 from math import sin, cos, PI, radians
+from abc import ABC, abstractmethod
 
 # class imports
-import meteor
+import utilities  # Point, Velocity classes
 
 
 # .\images\
@@ -21,6 +22,7 @@ laser = './images/laserBlue01.png'
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+SCREEN_TITLE = 'Asteroids | Nathan Johnston'
 
 BULLET_RADIUS = 30
 BULLET_SPEED = 10
@@ -41,6 +43,67 @@ MEDIUM_ROCK_RADIUS = 5
 
 SMALL_ROCK_SPIN = 5
 SMALL_ROCK_RADIUS = 2
+
+
+class MovingObject:
+    """ These objects move across the playing field
+    When they reach The Other Side, they: wrap
+
+    ___MovingObject()___
+    center : Point()
+    velocity : Velocity()
+    radius : float
+    alive : Boolean
+    texture_file : str
+    angle : float
+    __init__()
+    advance() : None
+    draw() : None
+    is_off_screen(screen_width, screen_height) : Boolean
+    wrap_around() : None
+    """
+
+    def __init__(self, x: int = 0, y: int = 0, dx: float = 0, dy: float = 0, radius: int = 10, angle: float = 0):
+        """ initialize object values """
+        self.center = Point(start_x=x, start_y=y)
+        self.velocity = Velocity(dx, dy)
+        self.alive = True
+        self.radius = radius
+        self.angle = angle
+        self.texture_file = None
+        self.texture = arcade.load_texture(self.texture_file)
+
+    def advance(self):
+        """ Move the object across the field """
+        self.center.x += self.velocity.dx
+        self.center.y += self.velocity.dy
+
+        # handle wrap
+        self.wrap()
+
+    def draw(self):
+        """ Draw self on field """
+        arcade.draw_scaled_texture_rectangle(
+            self.center.x, self.center.y, self.texture, self.angle)
+
+    def is_off_screen(self):
+        """ checks if the object has left the premises 
+        returns : Boolean
+        """
+        return self.center.x > SCREEN_WIDTH or self.center.y > SCREEN_HEIGHT or self.center.x < 0 or self.center.y < 0
+
+    def wrap_around(self):
+        """ checks what bounds the object has crossed and fixes it"""
+        # horizontal
+        if self.center.x > SCREEN_WIDTH:
+            self.center.x = self.radius
+        elif self.center.x < 0:
+            self.center.x = SCREEN_WIDTH - self.radius
+        # vertical
+        if self.center.x > SCREEN_WIDTH:
+            self.center.x = self.radius
+        elif self.center.x < 0:
+            self.center.x = SCREEN_WIDTH - self.radius
 
 
 class Game(arcade.Window):
