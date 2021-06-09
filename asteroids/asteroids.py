@@ -5,7 +5,7 @@ Designed to be completed by others
 This program implements the asteroids game.
 """
 import arcade
-from math import sin, cos, PI, radians
+import math
 from abc import ABC, abstractmethod
 
 # class imports
@@ -52,13 +52,14 @@ class MovingObject:
     ___MovingObject()___
     center : Point()
     velocity : Velocity()
-    radius : float
+    radius : int
     alive : Boolean
     texture_file : str
     angle : float
     __init__()
     advance() : None
     draw() : None
+    rotate() : None
     is_off_screen(screen_width, screen_height) : Boolean
     wrap_around() : None
     """
@@ -70,21 +71,28 @@ class MovingObject:
         self.alive = True
         self.radius = radius
         self.angle = angle
-        self.texture_file = None
-        self.texture = arcade.load_texture(self.texture_file)
+        self.texture_file = None  # reassign this in subclasses
 
     def advance(self):
         """ Move the object across the field """
+        # move dx, dy units
         self.center.x += self.velocity.dx
         self.center.y += self.velocity.dy
 
-        # handle wrap
-        self.wrap()
-
     def draw(self):
         """ Draw self on field """
-        arcade.draw_scaled_texture_rectangle(
-            self.center.x, self.center.y, self.texture, self.angle)
+        texture = arcade.load_texture(self.texture_file)
+
+        width = texture.width
+        height = texture.height
+        alpha = 255  # For transparency, 255 means not transparent
+
+        arcade.draw_texture_rectangle(
+            self.center.x, self.center.y, width, height, self.texture, self.angle, alpha)
+
+    def rotate(self, value):
+        """ rotate the moving object """
+        self.angle += value
 
     def is_off_screen(self):
         """ checks if the object has left the premises 
@@ -99,6 +107,7 @@ class MovingObject:
             self.center.x = self.radius
         elif self.center.x < 0:
             self.center.x = SCREEN_WIDTH - self.radius
+
         # vertical
         if self.center.x > SCREEN_WIDTH:
             self.center.x = self.radius
@@ -126,6 +135,11 @@ class Game(arcade.Window):
         self.held_keys = set()
 
         # TODO: declare anything here you need the game class to track
+        self.player = None
+
+        self.lasers = []
+
+        self.asteroids = []
 
     def on_draw(self):
         """
@@ -137,6 +151,16 @@ class Game(arcade.Window):
         arcade.start_render()
 
         # TODO: draw each object
+
+    def draw_score(self):
+        """
+        Puts the current score on the screen
+        """
+        score_text = "Score: {}".format(self.score)
+        start_x = 10
+        start_y = SCREEN_HEIGHT - 20
+        arcade.draw_text(score_text, start_x=start_x, start_y=start_y,
+                         font_size=12, color=arcade.color.NAVY_BLUE)
 
     def update(self, delta_time):
         """
@@ -154,16 +178,16 @@ class Game(arcade.Window):
         This function checks for keys that are being held down.
         You will need to put your own method calls in here.
         """
-        if arcade.key.LEFT in self.held_keys:
+        if arcade.key.LEFT in self.held_keys or arcade.key.A in self.held_keys:
             pass
 
-        if arcade.key.RIGHT in self.held_keys:
+        if arcade.key.RIGHT in self.held_keys or arcade.key.D in self.held_keys:
             pass
 
-        if arcade.key.UP in self.held_keys:
+        if arcade.key.UP in self.held_keys or arcade.key.W in self.held_keys:
             pass
 
-        if arcade.key.DOWN in self.held_keys:
+        if arcade.key.DOWN in self.held_keys or arcade.key.S in self.held_keys:
             pass
 
         # Machine gun mode...
