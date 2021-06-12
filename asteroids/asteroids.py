@@ -5,6 +5,7 @@ Designed to be completed by others
 This program implements the asteroids game.
 """
 import ship
+import meteor
 import arcade
 import math
 from abc import ABC, abstractmethod
@@ -12,7 +13,7 @@ from abc import ABC, abstractmethod
 # .\images\
 PLAYER = './images/playerShip1_orange.png'
 ROCK_BIG = './images/meteorGrey_big1.png'
-ROCK_MED = './images/meteorGrey_med1.png'
+ROCK_MEDIUM = './images/meteorGrey_med1.png'
 ROCK_SMALL = './images/meteorGrey_small1.png'
 LASER = './images/laserBlue01.png'
 
@@ -63,7 +64,8 @@ class Game(arcade.Window):
 
         # TODO: declare anything here you need the game class to track
         self.score = 0
-        self.player = Ship(radius=SHIP_RADIUS)
+        self.player = Ship(start_x=SCREEN_WIDTH//2,
+                           start_y=SCREEN_HEIGHT//2)
 
         self.lasers = []
 

@@ -32,3 +32,17 @@ class Velocity:
         """ initiate values """
         self.dx = start_dx
         self.dy = start_dy
+
+    def increment_dx(self, value):
+        """ increase horizontal vector magnitude, maintain semblance of direction """
+        if self.dx > 0:
+            self.dx += value
+        else:
+            self.dx -= value
+
+    def increment_dy(self, value):
+        """ increase vertical vector magnitude, maintain semblance of direction """
+        if self.dy > 0:
+            self.dy += value
+        else:
+            self.dy -= value

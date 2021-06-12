@@ -1,7 +1,8 @@
 import utilities  # Point, Velocity classes
+from abc import ABC, abstractmethod
 
 
-class MovingObject:
+class MovingObject(ABC):
     """ These objects move across the playing field
     When they reach The Other Side, they: wrap
 
@@ -29,6 +30,7 @@ class MovingObject:
         self.alive = True
         self.radius = radius
         self.angle = angle
+        self.rotation_speed = 0
         self._texture_file = None  # reassign this in subclasses
 
     def advance(self):
@@ -48,9 +50,9 @@ class MovingObject:
         arcade.draw_texture_rectangle(
             self.center.x, self.center.y, width, height, self.texture, self.angle, alpha)
 
-    def rotate(self, value):
-        """ rotate the moving object """
-        self.angle += value
+    def rotate(self):
+        """ increment angle by rotation speed """
+        self.angle += self.rotation_speed
 
     def is_off_screen(self):
         """ checks if the object has left the premises 
@@ -71,3 +73,7 @@ class MovingObject:
             self.center.x = self.radius
         elif self.center.x < 0:
             self.center.x = SCREEN_WIDTH - self.radius
+
+    def not_alive(self):
+        """ commit alt+F4 """
+        self.alive = False

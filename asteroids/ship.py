@@ -13,11 +13,16 @@ class Ship(MovingObject):
     + rotate() : None
     """
 
-    def __init__(self, radius, turn_amount, thrust, file: str = PLAYER):
+    def __init__(self, start_x, start_y, radius: int = SHIP_RADIUS, turn_amount: int = SHIP_TURN_AMOUNT, thrust: int = SHIP_THRUST_AMOUNT, file: str = PLAYER):
         """ class setup"""
         # get the movingObject stuff
-        super().__init__(radius=radius)
+        super().__init__(start_x=start_x, start_y=start_y, radius=radius)
 
-        self.texture_file = file
+        self._texture_file = file
         self.rotation_speed = turn_amount
         self.thrust = thrust
+
+    def increase_velocity(self, dx: float, dy: float):
+        """ increment velocity by a given speed """
+        self.velocity.increment_dx(dx)
+        self.velocity.increment_dy(dy)
