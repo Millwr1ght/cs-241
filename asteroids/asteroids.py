@@ -4,20 +4,17 @@ Original Author: Br. Burton
 Designed to be completed by others
 This program implements the asteroids game.
 """
+import ship
 import arcade
 import math
 from abc import ABC, abstractmethod
 
-# class imports
-import utilities  # Point, Velocity classes
-
-
 # .\images\
-player = './images/playerShip1_orange.png'
-meteor_big = './images/meteorGrey_big1.png'
-meteor_med = './images/meteorGrey_med1.png'
-meteor_small = './images/meteorGrey_small1.png'
-laser = './images/laserBlue01.png'
+PLAYER = './images/playerShip1_orange.png'
+ROCK_BIG = './images/meteorGrey_big1.png'
+ROCK_MED = './images/meteorGrey_med1.png'
+ROCK_SMALL = './images/meteorGrey_small1.png'
+LASER = './images/laserBlue01.png'
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
@@ -45,76 +42,6 @@ SMALL_ROCK_SPIN = 5
 SMALL_ROCK_RADIUS = 2
 
 
-class MovingObject:
-    """ These objects move across the playing field
-    When they reach The Other Side, they: wrap
-
-    ___MovingObject()___
-    center : Point()
-    velocity : Velocity()
-    radius : int
-    alive : Boolean
-    texture_file : str
-    angle : float
-    __init__()
-    advance() : None
-    draw() : None
-    rotate() : None
-    is_off_screen(screen_width, screen_height) : Boolean
-    wrap_around() : None
-    """
-
-    def __init__(self, x: int = 0, y: int = 0, dx: float = 0, dy: float = 0, radius: int = 10, angle: float = 0):
-        """ initialize object values """
-        self.center = Point(start_x=x, start_y=y)
-        self.velocity = Velocity(dx, dy)
-        self.alive = True
-        self.radius = radius
-        self.angle = angle
-        self.texture_file = None  # reassign this in subclasses
-
-    def advance(self):
-        """ Move the object across the field """
-        # move dx, dy units
-        self.center.x += self.velocity.dx
-        self.center.y += self.velocity.dy
-
-    def draw(self):
-        """ Draw self on field """
-        texture = arcade.load_texture(self.texture_file)
-
-        width = texture.width
-        height = texture.height
-        alpha = 255  # For transparency, 255 means not transparent
-
-        arcade.draw_texture_rectangle(
-            self.center.x, self.center.y, width, height, self.texture, self.angle, alpha)
-
-    def rotate(self, value):
-        """ rotate the moving object """
-        self.angle += value
-
-    def is_off_screen(self):
-        """ checks if the object has left the premises 
-        returns : Boolean
-        """
-        return self.center.x > SCREEN_WIDTH or self.center.y > SCREEN_HEIGHT or self.center.x < 0 or self.center.y < 0
-
-    def wrap_around(self):
-        """ checks what bounds the object has crossed and fixes it"""
-        # horizontal
-        if self.center.x > SCREEN_WIDTH:
-            self.center.x = self.radius
-        elif self.center.x < 0:
-            self.center.x = SCREEN_WIDTH - self.radius
-
-        # vertical
-        if self.center.x > SCREEN_WIDTH:
-            self.center.x = self.radius
-        elif self.center.x < 0:
-            self.center.x = SCREEN_WIDTH - self.radius
-
-
 class Game(arcade.Window):
     """
     This class handles all the game callbacks and interaction
@@ -135,11 +62,12 @@ class Game(arcade.Window):
         self.held_keys = set()
 
         # TODO: declare anything here you need the game class to track
-        self.player = None
+        self.score = 0
+        self.player = Ship(radius=SHIP_RADIUS)
 
         self.lasers = []
 
-        self.asteroids = []
+        self.asteroids = []  # starts with five(5) Big Rocks
 
     def on_draw(self):
         """
@@ -150,17 +78,25 @@ class Game(arcade.Window):
         # clear the screen to begin drawing
         arcade.start_render()
 
-        # TODO: draw each object
+        self.player.draw()
+
+        for laser in self.lasers:
+            laser.draw()
+
+        for rock in self.asteroids:
+            rock.draw()
+
+        self.draw_score()
 
     def draw_score(self):
         """
         Puts the current score on the screen
         """
-        score_text = "Score: {}".format(self.score)
+        score_text = f"Score: {self.score}"
         start_x = 10
         start_y = SCREEN_HEIGHT - 20
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y,
-                         font_size=12, color=arcade.color.NAVY_BLUE)
+                         font_size=12, color=arcade.color.WHITE)
 
     def update(self, delta_time):
         """
@@ -169,9 +105,65 @@ class Game(arcade.Window):
         """
         self.check_keys()
 
+        # TODO: Check for collisions
+        self.check_collisions()
+        self.check_off_screen()
+
         # TODO: Tell everything to advance or move forward one step in time
 
-        # TODO: Check for collisions
+    def check_collisions(self):
+        """
+        Checks to see if lasers have hit asteroids.
+        Updates scores and removes dead items.
+        :return:
+        """
+
+        for laser in self.lasers:
+            for asteroid in self.asteroids:
+
+                # Make sure they are both alive before checking for a collision
+                if laser.alive and asteroid.alive:
+                    too_close = laser.radius + asteroid.radius
+
+                    if (abs(laser.center.x - asteroid.center.x) < too_close and
+                            abs(laser.center.y - asteroid.center.y) < too_close):
+                        # its a hit!
+
+                        laser.not_alive()
+                        self.score += asteroid.hit()
+
+                        # We will wait to remove the dead objects until after we
+                        # finish going through the list
+
+        # Now, check for anything that is dead, and remove it
+        self.cleanup_debris()
+
+    def cleanup_debris(self):
+        """
+        Removes any dead lasers or asteroids from the list.
+        :return:
+        """
+        for laser in self.lasers:
+            if not laser.alive:
+                self.lasers.remove(laser)
+
+        for asteroid in self.asteroids:
+            if not asteroid.alive:
+                self.asteroids.remove(asteroid)
+
+    def check_off_screen(self):
+        """
+        Checks to see if lasers or asteroids have left the screen
+        and if so, moves them to the other side of the screen.
+        :return:
+        """
+        for laser in self.lasers:
+            if laser.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
+                laser.wrap_around()
+
+        for asteroid in self.asteroids:
+            if asteroid.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
+                asteroid.wrap_around()
 
     def check_keys(self):
         """
@@ -179,15 +171,19 @@ class Game(arcade.Window):
         You will need to put your own method calls in here.
         """
         if arcade.key.LEFT in self.held_keys or arcade.key.A in self.held_keys:
+            # rotate ship counterclockwise
             pass
 
         if arcade.key.RIGHT in self.held_keys or arcade.key.D in self.held_keys:
+            # rotate ship clockwise
             pass
 
         if arcade.key.UP in self.held_keys or arcade.key.W in self.held_keys:
+            # move ship forward
             pass
 
         if arcade.key.DOWN in self.held_keys or arcade.key.S in self.held_keys:
+            # slow down ship
             pass
 
         # Machine gun mode...
@@ -197,13 +193,13 @@ class Game(arcade.Window):
     def on_key_press(self, key: int, modifiers: int):
         """
         Puts the current key in the set of keys that are being held.
-        You will need to add things here to handle firing the bullet.
+        You will need to add things here to handle firing the laser.
         """
         if self.ship.alive:
             self.held_keys.add(key)
 
             if key == arcade.key.SPACE:
-                # TODO: Fire the bullet here!
+                # TODO: Fire the laser here!
                 pass
 
     def on_key_release(self, key: int, modifiers: int):
@@ -212,6 +208,20 @@ class Game(arcade.Window):
         """
         if key in self.held_keys:
             self.held_keys.remove(key)
+
+    @staticmethod
+    def _get_coords_from_angle(angle, length):
+        """ 
+        get the x and y co-ordinates from a length and an angle
+        particularly from the angle and a length 
+        so we can spawn lasers at the end of the ship
+        """
+        angle_radians = math.radians(angle)
+
+        x = length * math.cos(angle_radians)
+        y = length * math.sin(angle_radians)
+
+        return x, y
 
 
 # Creates the game and starts it going

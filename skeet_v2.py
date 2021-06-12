@@ -606,7 +606,7 @@ class Game(arcade.Window):
         return angle_degrees
 
     @staticmethod
-    def _get_coords_from_angle(angle, width):
+    def _get_coords_from_angle(angle, length):
         """ 
         get the x and y co-ordinates from a length and an angle
         particularly from the angle and length of the rifle 
@@ -614,8 +614,8 @@ class Game(arcade.Window):
         """
         angle_radians = math.radians(angle)
 
-        x = width * math.cos(angle_radians)
-        y = width * math.sin(angle_radians)
+        x = length * math.cos(angle_radians)
+        y = length * math.sin(angle_radians)
 
         return x, y
 
