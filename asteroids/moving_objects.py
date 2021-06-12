@@ -1,8 +1,17 @@
-import utilities  # Point, Velocity classes
-from abc import ABC, abstractmethod
+""" 
+File: moving_objects.py
+Author: Nathan Johnston
+
+base class for moving objects for the asteroids.py arcade game
+"""
+
+# class and method imports
+from utilities import Point, Velocity
+from arcade import load_texture, draw_texture_rectangle
+import math
 
 
-class MovingObject(ABC):
+class MovingObject:
     """ These objects move across the playing field
     When they reach The Other Side, they: wrap
 
@@ -18,8 +27,8 @@ class MovingObject(ABC):
     advance() : None
     draw() : None
     rotate() : None
-    is_off_screen(screen_width, screen_height) : Boolean
-    wrap_around() : None
+    is_off_screen(width, height) : Boolean
+    wrap_around(width, height) : None
     not_alive() : None
     """
 
@@ -41,39 +50,53 @@ class MovingObject(ABC):
 
     def draw(self):
         """ Draw self on field """
-        texture = arcade.load_texture(self._texture_file)
+        texture = load_texture(self._texture_file)
 
         width = texture.width
         height = texture.height
         alpha = 255  # For transparency, 255 means not transparent
 
-        arcade.draw_texture_rectangle(
-            self.center.x, self.center.y, width, height, self.texture, self.angle, alpha)
+        draw_texture_rectangle(
+            self.center.x, self.center.y, width, height, texture, self.angle, alpha)
 
     def rotate(self):
         """ increment angle by rotation speed """
         self.angle += self.rotation_speed
 
-    def is_off_screen(self):
+    def is_off_screen(self, width, height):
         """ checks if the object has left the premises 
         returns : Boolean
         """
-        return self.center.x > SCREEN_WIDTH or self.center.y > SCREEN_HEIGHT or self.center.x < 0 or self.center.y < 0
+        return self.center.x > width or self.center.y > height or self.center.x < 0 or self.center.y < 0
 
-    def wrap_around(self):
+    def wrap_around(self, width, height):
         """ checks what bounds the object has crossed and fixes it"""
         # horizontal
-        if self.center.x > SCREEN_WIDTH:
+        if self.center.x > width:
             self.center.x = self.radius
         elif self.center.x < 0:
-            self.center.x = SCREEN_WIDTH - self.radius
+            self.center.x = width - self.radius
 
         # vertical
-        if self.center.x > SCREEN_WIDTH:
-            self.center.x = self.radius
-        elif self.center.x < 0:
-            self.center.x = SCREEN_WIDTH - self.radius
+        if self.center.y > height:
+            self.center.y = self.radius
+        elif self.center.y < 0:
+            self.center.y = height - self.radius
 
     def not_alive(self):
         """ commit alt+F4 """
         self.alive = False
+
+    @staticmethod
+    def _get_x_y_from_angle(angle, length):
+        """ 
+        get the x and y co-ordinates from a length and an angle
+        particularly from the angle and a length 
+        so we can spawn lasers at the end of the ship
+        """
+        angle_radians = math.radians(angle)
+
+        x = length * math.cos(angle_radians)
+        y = length * math.sin(angle_radians)
+
+        return x, y

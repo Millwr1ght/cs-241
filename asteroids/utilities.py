@@ -21,8 +21,24 @@ class Point:
 
     def __init__(self, start_x: float = 0, start_y: float = 0):
         """ initiate values """
-        self.x = start_x
-        self.y = start_y
+        self._x = start_x
+        self._y = start_y
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = value
 
 
 class Velocity:
@@ -33,16 +49,32 @@ class Velocity:
         self.dx = start_dx
         self.dy = start_dy
 
+    @property
+    def dx(self):
+        return self._dx
+
+    @dx.setter
+    def dx(self, value):
+        self._dx = value
+
+    @property
+    def dy(self):
+        return self._dy
+
+    @dy.setter
+    def dy(self, value):
+        self._dy = value
+
     def increment_dx(self, value):
         """ increase horizontal vector magnitude, maintain semblance of direction """
-        if self.dx > 0:
-            self.dx += value
+        if self._dx > 0:
+            self._dx += value
         else:
-            self.dx -= value
+            self._dx -= value
 
     def increment_dy(self, value):
         """ increase vertical vector magnitude, maintain semblance of direction """
-        if self.dy > 0:
-            self.dy += value
+        if self._dy > 0:
+            self._dy += value
         else:
-            self.dy -= value
+            self._dy -= value

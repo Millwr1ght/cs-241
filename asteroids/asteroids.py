@@ -4,17 +4,15 @@ Original Author: Br. Burton
 Designed to be completed by others
 This program implements the asteroids game.
 """
-import ship
-import meteor
+
 import arcade
 import math
-from abc import ABC, abstractmethod
+from random import uniform
+from ship import Ship
+from meteor import BigMeteor, SmallMeteor, MedMeteor
 
 # .\images\
-PLAYER = './images/playerShip1_orange.png'
-ROCK_BIG = './images/meteorGrey_big1.png'
-ROCK_MEDIUM = './images/meteorGrey_med1.png'
-ROCK_SMALL = './images/meteorGrey_small1.png'
+PLAYER_SHIP = './images/playerShip1_orange.png'
 LASER = './images/laserBlue01.png'
 
 # These are Global constants to use throughout the game
@@ -32,16 +30,6 @@ SHIP_RADIUS = 30
 
 INITIAL_ROCK_COUNT = 5
 
-BIG_ROCK_SPIN = 1
-BIG_ROCK_SPEED = 1.5
-BIG_ROCK_RADIUS = 15
-
-MEDIUM_ROCK_SPIN = -2
-MEDIUM_ROCK_RADIUS = 5
-
-SMALL_ROCK_SPIN = 5
-SMALL_ROCK_RADIUS = 2
-
 
 class Game(arcade.Window):
     """
@@ -51,25 +39,35 @@ class Game(arcade.Window):
     You are welcome to modify anything in this class.
     """
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, title):
         """
         Sets up the initial conditions of the game
         :param width: Screen width
         :param height: Screen height
         """
-        super().__init__(width, height)
+        super().__init__(width, height, title)
         arcade.set_background_color(arcade.color.SMOKY_BLACK)
 
         self.held_keys = set()
 
         # TODO: declare anything here you need the game class to track
         self.score = 0
-        self.player = Ship(start_x=SCREEN_WIDTH//2,
-                           start_y=SCREEN_HEIGHT//2)
+        self.ship = Ship(start_x=SCREEN_WIDTH//2,
+                         start_y=SCREEN_HEIGHT//2,
+                         radius=SHIP_RADIUS,
+                         turn_amount=SHIP_TURN_AMOUNT,
+                         thrust=SHIP_THRUST_AMOUNT,
+                         file=PLAYER_SHIP)
 
         self.lasers = []
 
-        self.asteroids = []  # starts with five(5) Big Rocks
+        # starts with five(5) Big Rocks
+        self.asteroids = []
+        for i in range(INITIAL_ROCK_COUNT):
+            x = uniform(SCREEN_WIDTH // 8, (SCREEN_WIDTH * 7) // 8)
+            y = uniform(SCREEN_HEIGHT // 8, (SCREEN_HEIGHT * 7) // 8)
+            angle = uniform(-180, 180)
+            self.asteroids.append(BigMeteor(x, y, angle))
 
     def on_draw(self):
         """
@@ -80,7 +78,7 @@ class Game(arcade.Window):
         # clear the screen to begin drawing
         arcade.start_render()
 
-        self.player.draw()
+        self.ship.draw()
 
         for laser in self.lasers:
             laser.draw()
@@ -112,6 +110,17 @@ class Game(arcade.Window):
         self.check_off_screen()
 
         # TODO: Tell everything to advance or move forward one step in time
+        self.ship.advance()
+
+        for laser in self.lasers:
+            if laser.lifespan > 0:
+                laser.advance()
+                laser.lifespan -= 1
+            else:
+                laser.not_alive()
+
+        for asteroid in self.asteroids:
+            asteroid.advance()
 
     def check_collisions(self):
         """
@@ -137,6 +146,8 @@ class Game(arcade.Window):
                         # We will wait to remove the dead objects until after we
                         # finish going through the list
 
+        # TODO: check if ship is touching any asteroid
+
         # Now, check for anything that is dead, and remove it
         self.cleanup_debris()
 
@@ -161,11 +172,11 @@ class Game(arcade.Window):
         """
         for laser in self.lasers:
             if laser.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
-                laser.wrap_around()
+                laser.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
 
         for asteroid in self.asteroids:
             if asteroid.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
-                asteroid.wrap_around()
+                asteroid.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
 
     def check_keys(self):
         """
@@ -227,5 +238,5 @@ class Game(arcade.Window):
 
 
 # Creates the game and starts it going
-window = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
+window = Game(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 arcade.run()
