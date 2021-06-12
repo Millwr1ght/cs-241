@@ -20,10 +20,6 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = 'Asteroids | Nathan Johnston'
 
-BULLET_RADIUS = 30
-BULLET_SPEED = 10
-BULLET_LIFE = 60
-
 SHIP_TURN_AMOUNT = 3
 SHIP_THRUST_AMOUNT = 0.25
 SHIP_RADIUS = 30
@@ -213,7 +209,13 @@ class Game(arcade.Window):
 
             if key == arcade.key.SPACE:
                 # TODO: Fire the laser here!
+
+                # self.prepare_the_lasers()
                 pass
+
+    def prepare_the_lasers(self):
+        """ prepare to fire the ship laser """
+        spawn_x, spawn_y = self.ship.get_laser_spawn_x_y()
 
     def on_key_release(self, key: int, modifiers: int):
         """

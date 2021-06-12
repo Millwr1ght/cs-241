@@ -26,3 +26,9 @@ class Ship(MovingObject):
         """ increment velocity by a given speed """
         self.velocity.increment_dx(dx)
         self.velocity.increment_dy(dy)
+
+    def get_laser_spawn_x_y(self):
+        """ get the laser spawn location based on current ship orientation 
+        :return: tuple(x:float, y:float)
+        """
+        return self._get_coords_from_angle(self.angle, self.radius)
