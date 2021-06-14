@@ -1,4 +1,4 @@
-Your Name:
+Your Name: Nathan Johnston
 
 1. In your own words, describe encapsulation.
      -- Encapsulation is the process of making how users interact with data simpler and more intuitive
