@@ -1,6 +1,6 @@
 """
 File: time_v1.py
-Author: Team Tuesday Morning (Nate, Tode, etc)
+Author: Team Tuesday Lunch (Nate, Tode, etc)
 ​
 Practice using getters and setters by creating a class to model a time of day.
 """
