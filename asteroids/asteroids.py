@@ -10,7 +10,6 @@ This program implements the asteroids game.
 """ 
 Ideas of what to add:
  -- Sounds
- -- Spawn more rocks when rocks run out
  -- Or, spawn new rocks every 10-30 seconds
  -- Explosion death animation
  -- Speed limits
@@ -19,9 +18,9 @@ Ideas of what to add:
 # .\images\
 import arcade
 import math
-from random import uniform
+from random import uniform, randint
 from ship import Ship
-from meteor import BigMeteor, SmallMeteor, MedMeteor
+from meteor import BigMeteor
 from laser import Laser
 PLAYER_SHIP = './images/playerShip1_orange.png'
 
@@ -64,9 +63,16 @@ class Game(arcade.Window):
         self.firing_delay = 10  # Machine gun bullet frame delay counter
 
         # game objects
-        self.ship = None
-        self.lasers = None
-        self.asteroids = None
+        self.ship = Ship(start_x=SCREEN_WIDTH//2,
+                         start_y=SCREEN_HEIGHT//2,
+                         radius=SHIP_RADIUS,
+                         thrust=SHIP_THRUST_AMOUNT,
+                         file=PLAYER_SHIP)
+        self.lasers = []
+        self.asteroids = []
+
+        # game starts with five(5) Big Rocks
+        self.spawn_asteroids(INITIAL_ROCK_COUNT)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -79,19 +85,17 @@ class Game(arcade.Window):
                          thrust=SHIP_THRUST_AMOUNT,
                          file=PLAYER_SHIP)
 
-        # the lasers
+        # the lasers and asteroids
         self.lasers = []
-
-        # the asteroids
         self.asteroids = []
 
         # game starts with five(5) Big Rocks
         self.spawn_asteroids(INITIAL_ROCK_COUNT)
 
-    def spawn_asteroids(self, count):
+    def spawn_asteroids(self, count: int = 1):
         """ create asteroids to play with """
         # Big Meteors
-        for i in range(count):
+        for _ in range(count):
             x = uniform(SCREEN_WIDTH // 8, (SCREEN_WIDTH * 7) // 8)
             y = uniform(SCREEN_HEIGHT // 8, (SCREEN_HEIGHT * 7) // 8)
             angle = uniform(-180, 180)
@@ -142,6 +146,14 @@ class Game(arcade.Window):
         self.ship.advance()
         self.check_collisions()
         self.check_off_screen()
+
+        if len(self.asteroids) < 3:
+            # make more
+            self.spawn_asteroids(randint(0, 2))
+
+        # once you finish the first batch of asteroids, there is an 8% chance per second (.1% * 80 frames/sec) of spawning more
+        if self.score > 160 and not randint(0, 999):
+            self.spawn_asteroids()
 
     def machine_gun(self):
         """ rata-tata-tat rata-tata-tat """
@@ -195,7 +207,7 @@ class Game(arcade.Window):
 
                 if abs(asteroid.center.x - self.ship.center.x) < too_close and abs(asteroid.center.y - self.ship.center.y) < too_close:
                     # dead ship
-                    ship.not_alive()
+                    self.ship.not_alive()
 
         # Now, check for anything that is dead, and remove it
         self.cleanup_debris()
