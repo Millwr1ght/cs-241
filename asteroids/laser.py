@@ -6,8 +6,11 @@ BULLET_RADIUS = 30
 BULLET_SPEED = 10
 BULLET_LIFE = 60
 
+# texture
+LASER = './images/laserBlue01.png'
 
-class Laser:
+
+class Laser(MovingObject):
     """ the laser class
     these fire from the ship, and hit meteors/asteroids/rocks
 
@@ -19,19 +22,32 @@ class Laser:
     + fire() : None
     """
 
-    def __init__(self, x, y, angle: float):
+    def __init__(self, x, y, file: str = LASER):
         """ setup attributes """
         # get that moving object
-        super().__init__(angle=angle)
+        super().__init__(x, y)
 
+        self._texture_file = file
         self.lifespan = BULLET_LIFE
         self.move_speed = BULLET_SPEED
         self.radius = BULLET_RADIUS
 
-    def fire(self, angle: float):
-        """ shoot the laser based on the given angle, in degrees
+    def advance(self):
+        """ Move the object across the field """
+        # move dx, dy units
+        self.center.x += self.velocity.dx
+        self.center.y += self.velocity.dy
+        self.lifespan -= 1
+        if self.lifespan <= 0:
+            self.not_alive()
+
+    def fire(self, ship_velocity, angle: float):
         """
-        self.velocity.dx = math.cos(math.radians(
+        shoot the laser based on the given angle, in degrees
+        """
+        angle = angle + 90
+        self.velocity.dx = ship_velocity.dx + math.cos(math.radians(
             angle)) * self.move_speed
-        self.velocity.dy = math.sin(math.radians(
+        self.velocity.dy = ship_velocity.dy + math.sin(math.radians(
             angle)) * self.move_speed
+        self.angle = angle

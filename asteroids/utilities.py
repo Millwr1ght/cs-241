@@ -64,17 +64,3 @@ class Velocity:
     @dy.setter
     def dy(self, value):
         self._dy = value
-
-    def increment_dx(self, value):
-        """ increase horizontal vector magnitude, maintain semblance of direction """
-        if self._dx > 0:
-            self._dx += value
-        else:
-            self._dx -= value
-
-    def increment_dy(self, value):
-        """ increase vertical vector magnitude, maintain semblance of direction """
-        if self._dy > 0:
-            self._dy += value
-        else:
-            self._dy -= value

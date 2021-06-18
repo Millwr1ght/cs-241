@@ -61,7 +61,7 @@ class MovingObject:
 
     def rotate(self):
         """ increment angle by rotation speed """
-        self.angle += self.rotation_speed
+        pass
 
     def is_off_screen(self, width, height):
         """ checks if the object has left the premises 

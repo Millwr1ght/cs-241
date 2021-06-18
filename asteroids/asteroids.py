@@ -2,18 +2,28 @@
 File: asteroids.py
 Original Author: Br. Burton
 Designed to be completed by others
+
+Completed by: N Johnston
+
 This program implements the asteroids game.
 """
+""" 
+Ideas of what to add:
+ -- Sounds
+ -- Spawn more rocks when rocks run out
+ -- Or, spawn new rocks every 10-30 seconds
+ -- Explosion death animation
+ -- Speed limits
+"""
 
+# .\images\
 import arcade
 import math
 from random import uniform
 from ship import Ship
 from meteor import BigMeteor, SmallMeteor, MedMeteor
-
-# .\images\
+from laser import Laser
 PLAYER_SHIP = './images/playerShip1_orange.png'
-LASER = './images/laserBlue01.png'
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
@@ -46,20 +56,42 @@ class Game(arcade.Window):
 
         self.held_keys = set()
 
-        # TODO: declare anything here you need the game class to track
+        # Don't show the mouse cursor
+        self.set_mouse_visible(False)
+
+        # game variables and counters
+        self.score = 0
+        self.firing_delay = 10  # Machine gun bullet frame delay counter
+
+        # game objects
+        self.ship = None
+        self.lasers = None
+        self.asteroids = None
+
+    def setup(self):
+        """ Set up the game and initialize the variables. """
+
+        # the player
         self.score = 0
         self.ship = Ship(start_x=SCREEN_WIDTH//2,
                          start_y=SCREEN_HEIGHT//2,
                          radius=SHIP_RADIUS,
-                         turn_amount=SHIP_TURN_AMOUNT,
                          thrust=SHIP_THRUST_AMOUNT,
                          file=PLAYER_SHIP)
 
+        # the lasers
         self.lasers = []
 
-        # starts with five(5) Big Rocks
+        # the asteroids
         self.asteroids = []
-        for i in range(INITIAL_ROCK_COUNT):
+
+        # game starts with five(5) Big Rocks
+        self.spawn_asteroids(INITIAL_ROCK_COUNT)
+
+    def spawn_asteroids(self, count):
+        """ create asteroids to play with """
+        # Big Meteors
+        for i in range(count):
             x = uniform(SCREEN_WIDTH // 8, (SCREEN_WIDTH * 7) // 8)
             y = uniform(SCREEN_HEIGHT // 8, (SCREEN_HEIGHT * 7) // 8)
             angle = uniform(-180, 180)
@@ -101,22 +133,31 @@ class Game(arcade.Window):
         """
         self.check_keys()
 
-        # TODO: Check for collisions
-        self.check_collisions()
-        self.check_off_screen()
-
-        # TODO: Tell everything to advance or move forward one step in time
-        self.ship.advance()
-
         for laser in self.lasers:
-            if laser.lifespan > 0:
-                laser.advance()
-                laser.lifespan -= 1
-            else:
-                laser.not_alive()
+            laser.advance()
 
         for asteroid in self.asteroids:
             asteroid.advance()
+
+        self.ship.advance()
+        self.check_collisions()
+        self.check_off_screen()
+
+    def machine_gun(self):
+        """ rata-tata-tat rata-tata-tat """
+        self.firing_delay -= 1
+        # every 5 frames, shoot once, cycle counter
+        if self.firing_delay == 0:
+            self.fire_laser()
+            self.firing_delay = 10
+
+    def fire_laser(self):
+        """ how to shoot lasers """
+        spawn_x, spawn_y = self.ship.get_laser_spawn_x_y()
+        laser = Laser(spawn_x, spawn_y)
+        laser.fire(self.ship.velocity, self.ship.angle)
+
+        self.lasers.append(laser)
 
     def check_collisions(self):
         """
@@ -134,15 +175,27 @@ class Game(arcade.Window):
 
                     if (abs(laser.center.x - asteroid.center.x) < too_close and
                             abs(laser.center.y - asteroid.center.y) < too_close):
+
                         # its a hit!
-
                         laser.not_alive()
-                        self.score += asteroid.hit()
+                        asteroid.not_alive()
+                        score, new_meteors = asteroid.hit()
 
-                        # We will wait to remove the dead objects until after we
-                        # finish going through the list
+                        # add to the score
+                        self.score += score
+
+                        # add to the asteroid list
+                        for meteor in new_meteors:
+                            self.asteroids.append(meteor)
 
         # TODO: check if ship is touching any asteroid
+        for asteroid in self.asteroids:
+            if asteroid.alive and self.ship.alive:
+                too_close = asteroid.radius + self.ship.radius
+
+                if abs(asteroid.center.x - self.ship.center.x) < too_close and abs(asteroid.center.y - self.ship.center.y) < too_close:
+                    # dead ship
+                    ship.not_alive()
 
         # Now, check for anything that is dead, and remove it
         self.cleanup_debris()
@@ -160,6 +213,10 @@ class Game(arcade.Window):
             if not asteroid.alive:
                 self.asteroids.remove(asteroid)
 
+        if not self.ship.alive:
+            # TODO: Explosion of ship?
+            self.setup()
+
     def check_off_screen(self):
         """
         Checks to see if lasers or asteroids have left the screen
@@ -174,6 +231,9 @@ class Game(arcade.Window):
             if asteroid.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
                 asteroid.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
 
+        if self.ship.is_off_screen(SCREEN_WIDTH, SCREEN_HEIGHT):
+            self.ship.wrap_around(SCREEN_WIDTH, SCREEN_HEIGHT)
+
     def check_keys(self):
         """
         This function checks for keys that are being held down.
@@ -181,23 +241,23 @@ class Game(arcade.Window):
         """
         if arcade.key.LEFT in self.held_keys or arcade.key.A in self.held_keys:
             # rotate ship counterclockwise
-            pass
+            self.ship.rotate(SHIP_TURN_AMOUNT)
 
         if arcade.key.RIGHT in self.held_keys or arcade.key.D in self.held_keys:
             # rotate ship clockwise
-            pass
+            self.ship.rotate(-SHIP_TURN_AMOUNT)
 
         if arcade.key.UP in self.held_keys or arcade.key.W in self.held_keys:
             # move ship forward
-            pass
+            self.ship.move_forward()
 
         if arcade.key.DOWN in self.held_keys or arcade.key.S in self.held_keys:
             # slow down ship
-            pass
+            self.ship.slow_down()
 
         # Machine gun mode...
-        # if arcade.key.SPACE in self.held_keys:
-        #    pass
+        if arcade.key.SPACE in self.held_keys:
+            self.machine_gun()
 
     def on_key_press(self, key: int, modifiers: int):
         """
@@ -209,13 +269,7 @@ class Game(arcade.Window):
 
             if key == arcade.key.SPACE:
                 # TODO: Fire the laser here!
-
-                # self.prepare_the_lasers()
-                pass
-
-    def prepare_the_lasers(self):
-        """ prepare to fire the ship laser """
-        spawn_x, spawn_y = self.ship.get_laser_spawn_x_y()
+                self.fire_laser()
 
     def on_key_release(self, key: int, modifiers: int):
         """

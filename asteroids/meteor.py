@@ -42,6 +42,10 @@ class Meteor(MovingObject):
 
         self.rotate()
 
+    def rotate(self):
+        """ increment angle by rotation speed """
+        self.angle += self.rotation_speed
+
     def hit(self):
         """ what happens when the meteor gets hit """
         pass
@@ -74,15 +78,30 @@ class BigMeteor(Meteor):
         it breaks apart and becomes two medium asteroids and one small one.
         The first medium asteroid has the same velocity as the original large one 
             plus 2 pixel/frame in the up direction.
-        The second medium asteroid has the same velocity as the original large one0
+        The second medium asteroid has the same velocity as the original large one
             plus 2 pixel/frame in the down direction.
         The small asteroid has the original velocity plus 5 pixels/frame to the right.
 
-        :returns: int (score for hit)
+        :returns: int (score for hit), list
         """
-        # TODO
+        new_meteors = []
 
-        pass
+        # first broken piece
+        medium_1 = MedMeteor(self.center.x, self.center.y)
+        medium_1.velocity.dy = self.velocity.dy + 2
+        new_meteors.append(medium_1)
+
+        # second broken piece
+        medium_2 = MedMeteor(self.center.x, self.center.y)
+        medium_2.velocity.dy = self.velocity.dy - 2
+        new_meteors.append(medium_2)
+
+        # third broken piece
+        small = SmallMeteor(self.center.x, self.center.y)
+        small.velocity.dx = self.velocity.dx + 5
+        new_meteors.append(small)
+
+        return 1, new_meteors
 
 
 class MedMeteor(Meteor):
@@ -109,10 +128,23 @@ class MedMeteor(Meteor):
             plus 1.5 pixels/frame up and 1.5 pixels/frame to the right.
         The second, 1.5 pixels/frame down and 1.5 to the left.
 
-        :returns: int (score for hit)
+        :returns: int, list
         """
-        # TODO
-        pass
+        new_meteors = []
+
+        # small debris chunk #1
+        small_1 = SmallMeteor(self.center.x, self.center.y)
+        small_1.velocity.dx = self.velocity.dx + 1.5  # to the right
+        small_1.velocity.dy = self.velocity.dy + 1.5  # to the up
+        new_meteors.append(small_1)
+
+        # small debris chunk #2
+        small_2 = SmallMeteor(self.center.x, self.center.y)
+        small_2.velocity.dx = self.velocity.dx - 1.5  # to the left
+        small_2.velocity.dy = self.velocity.dy - 1.5  # to the down
+        new_meteors.append(small_2)
+
+        return 3, new_meteors
 
 
 class SmallMeteor(Meteor):
@@ -123,7 +155,7 @@ class SmallMeteor(Meteor):
     - texture_file = ROCK_SMALL
 
     - __init__() : None
-    + hit() : int
+    + hit() : int, list
     """
 
     def __init__(self, start_x, start_y, radius: int = SMALL_ROCK_RADIUS, turn_amount: int = SMALL_ROCK_SPIN, file: str = ROCK_SMALL):
@@ -136,7 +168,7 @@ class SmallMeteor(Meteor):
         """ what happens when you shoot a small asteroid?
         it is destroyed and removed from the game.
 
-        :returns: int (score for hit)
+        :returns: int (score for hit), list of new_meteors
         """
-        # TODO
         self.not_alive()
+        return 5, []
