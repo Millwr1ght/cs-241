@@ -85,7 +85,7 @@ class FlyingObject:
         """ checks if the object has left the premises 
         returns : Boolean
         """
-        return self.center.x > width or self.center.y > height
+        return self.center.x > width or self.center.y > height or height > 0
 
 
 class Bullet(FlyingObject):
