@@ -10,9 +10,11 @@ This program implements the asteroids game.
 """ 
 Ideas of what to add:
  -- Sounds
- -- Or, spawn new rocks every 10-30 seconds
  -- Explosion death animation
  -- Speed limits
+ -- Asteroid spawning deadzone near/around the ship so the player isn't instakilled
+ -- Pause/Game Over screens
+ -- Chance to spawn Medium asteroids
 """
 
 # .\images\
@@ -60,7 +62,9 @@ class Game(arcade.Window):
 
         # game variables and counters
         self.score = 0
+        self.highscore = 0
         self.firing_delay = 10  # Machine gun bullet frame delay counter
+        self.debug = False
 
         # game objects
         self.ship = Ship(start_x=SCREEN_WIDTH//2,
@@ -110,25 +114,52 @@ class Game(arcade.Window):
         # clear the screen to begin drawing
         arcade.start_render()
 
-        self.ship.draw()
+        if self.debug:
+            # Just hitboxes
+            self.ship.draw(True)
 
-        for laser in self.lasers:
-            laser.draw()
+            for laser in self.lasers:
+                laser.draw(True)
 
-        for rock in self.asteroids:
-            rock.draw()
+            for rock in self.asteroids:
+                rock.draw(True)
 
-        self.draw_score()
+            self.draw_score()
+
+            self.draw_debug()
+        else:
+            self.ship.draw()
+
+            for laser in self.lasers:
+                laser.draw()
+
+            for rock in self.asteroids:
+                rock.draw()
+
+            self.draw_score()
+
+    def draw_debug(self):
+        """ display debug information on the screen """
+        debug_text = self.ship.ship_debug()
+        start_x = SCREEN_WIDTH - 180
+        start_y = SCREEN_HEIGHT - 55
+        arcade.draw_text(debug_text, start_x=start_x, start_y=start_y,
+                         font_size=12, color=arcade.color.WHITE)
 
     def draw_score(self):
         """
         Puts the current score on the screen
         """
-        score_text = f"Score: {self.score}"
+        score_text = f"Score: {self.score}\nHigh score: {self.highscore}"
         start_x = 10
-        start_y = SCREEN_HEIGHT - 20
+        start_y = SCREEN_HEIGHT - 35
         arcade.draw_text(score_text, start_x=start_x, start_y=start_y,
                          font_size=12, color=arcade.color.WHITE)
+
+    def update_highscore(self):
+        """ if the score is bigger, it is the new highscore """
+        if self.score > self.highscore:
+            self.highscore = self.score
 
     def update(self, delta_time):
         """
@@ -146,6 +177,7 @@ class Game(arcade.Window):
         self.ship.advance()
         self.check_collisions()
         self.check_off_screen()
+        self.update_highscore()
 
         if len(self.asteroids) < 3:
             # make more
@@ -282,6 +314,9 @@ class Game(arcade.Window):
             if key == arcade.key.SPACE:
                 # TODO: Fire the laser here!
                 self.fire_laser()
+
+            if key == arcade.key.RCTRL:
+                self.debug = not self.debug
 
     def on_key_release(self, key: int, modifiers: int):
         """

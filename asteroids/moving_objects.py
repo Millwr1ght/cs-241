@@ -7,7 +7,7 @@ base class for moving objects for the asteroids.py arcade game
 
 # class and method imports
 from utilities import Point, Velocity
-from arcade import load_texture, draw_texture_rectangle
+from arcade import load_texture, draw_texture_rectangle, draw_circle_outline, color
 import math
 
 
@@ -30,6 +30,7 @@ class MovingObject:
     is_off_screen(width, height) : Boolean
     wrap_around(width, height) : None
     not_alive() : None
+    render_self_symbolically() : None
     """
 
     def __init__(self, x: int = 0, y: int = 0, dx: float = 0, dy: float = 0, radius: int = 10, angle: float = 0):
@@ -38,9 +39,19 @@ class MovingObject:
         self.velocity = Velocity(dx, dy)
         self.alive = True
         self.radius = radius
-        self.angle = angle
+        self._angle = angle
         self.rotation_speed = 0
         self._texture_file = None  # reassign this in subclasses
+
+    @property
+    def angle(self):
+        """ getter """
+        return self._angle % 360
+
+    @angle.setter
+    def angle(self, value):
+        """ setter """
+        self._angle = value
 
     def advance(self):
         """ Move the object across the field """
@@ -48,16 +59,23 @@ class MovingObject:
         self.center.x += self.velocity.dx
         self.center.y += self.velocity.dy
 
-    def draw(self):
+    def draw(self, symbolic: bool = False):
         """ Draw self on field """
         texture = load_texture(self._texture_file)
 
         width = texture.width
         height = texture.height
         alpha = 255  # For transparency, 255 means not transparent
+        if symbolic:
+            self.render_self_symbolically()
+        else:
+            draw_texture_rectangle(
+                self.center.x, self.center.y, width, height, texture, self.angle, alpha)
 
-        draw_texture_rectangle(
-            self.center.x, self.center.y, width, height, texture, self.angle, alpha)
+    def render_self_symbolically(self):
+        """ display self as just the hitbox """
+        draw_circle_outline(
+            self.center.x, self.center.y, self.radius, color.WHITE, 5)
 
     def rotate(self):
         """ increment angle by rotation speed """

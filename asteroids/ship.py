@@ -9,8 +9,11 @@ class Ship(MovingObject):
     - thrust = SHIP_THRUST_AMOUNT
 
     - __init__() : None
-    + rotate() : None
+    + rotate(turn_amount) : None
     + move_forward() : None
+    + slow_down(): None
+    + ship_debug(): str
+    + get_laser_spawn_x_y(): None
     """
 
     def __init__(self, start_x, start_y, radius: int, thrust: int, file: str):
@@ -20,6 +23,14 @@ class Ship(MovingObject):
 
         self._texture_file = file
         self.thrust = thrust
+
+    def ship_debug(self):
+        """
+        outputs debug information
+        :return: string
+        """
+        x, y = self.get_laser_spawn_x_y()
+        return f'\nShip center: {self.center.x:.2f}, {self.center.y:.2f}\nShip angle: {self.angle:.2f}\nLasers spawn at: {x:.2f}, {y:.2f}'
 
     def rotate(self, turn_amount):
         """ rotate the ship a given amount """
@@ -40,5 +51,5 @@ class Ship(MovingObject):
         """ get the laser spawn location based on current ship orientation 
         :return: tuple(x:float, y:float)
         """
-        x, y = self._get_x_y_from_angle(self.angle, self.radius)
+        x, y = self._get_x_y_from_angle(self.angle + 90, self.radius)
         return self.center.x + x, self.center.y + y
