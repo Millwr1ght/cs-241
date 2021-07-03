@@ -35,8 +35,8 @@ class Laser(MovingObject):
     def advance(self):
         """ Move the object across the field """
         # move dx, dy units
-        self.center.x += self.velocity.dx
-        self.center.y += self.velocity.dy
+        super().advance()
+
         self.lifespan -= 1
         if self.lifespan <= 0:
             self.not_alive()

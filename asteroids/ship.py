@@ -9,20 +9,22 @@ class Ship(MovingObject):
     - thrust = SHIP_THRUST_AMOUNT
 
     - __init__() : None
-    + rotate(turn_amount) : None
+    + turn_left(turn_amount) : None
+    + turn_right(turn_amount) : None
     + move_forward() : None
     + slow_down(): None
     + ship_debug(): str
     + get_laser_spawn_x_y(): None
     """
 
-    def __init__(self, start_x, start_y, radius: int, thrust: int, file: str):
+    def __init__(self, start_x, start_y, radius: int, turn_amount: int, thrust: int, file: str):
         """ class setup"""
         # get the movingObject stuff
         super().__init__(x=start_x, y=start_y, radius=radius)
 
         self._texture_file = file
         self.thrust = thrust
+        self.turn = turn_amount
 
     def ship_debug(self):
         """
@@ -32,9 +34,13 @@ class Ship(MovingObject):
         x, y = self.get_laser_spawn_x_y()
         return f'\nShip center: {self.center.x:.2f}, {self.center.y:.2f}\nShip angle: {self.angle:.2f}\nLasers spawn at: {x:.2f}, {y:.2f}'
 
-    def rotate(self, turn_amount):
-        """ rotate the ship a given amount """
-        self.angle += turn_amount
+    def turn_left(self):
+        """ rotate the ship counter-clockwise a given amount """
+        self.angle += self.turn
+
+    def turn_right(self):
+        """ rotate the ship clockwise a given amount """
+        self.angle -= self.turn
 
     def move_forward(self):
         """ increment velocity by a given speed """

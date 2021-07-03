@@ -11,8 +11,6 @@ This program implements the asteroids game.
 Ideas of what to add:
  -- Sounds
  -- Explosion death animation
- -- Speed limits
- -- Asteroid spawning deadzone near/around the ship so the player isn't instakilled
  -- Pause/Game Over screens
  -- Chance to spawn Medium asteroids
 """
@@ -70,6 +68,7 @@ class Game(arcade.Window):
         self.ship = Ship(start_x=SCREEN_WIDTH//2,
                          start_y=SCREEN_HEIGHT//2,
                          radius=SHIP_RADIUS,
+                         turn_amount=SHIP_TURN_AMOUNT,
                          thrust=SHIP_THRUST_AMOUNT,
                          file=PLAYER_SHIP)
         self.lasers = []
@@ -86,6 +85,7 @@ class Game(arcade.Window):
         self.ship = Ship(start_x=SCREEN_WIDTH//2,
                          start_y=SCREEN_HEIGHT//2,
                          radius=SHIP_RADIUS,
+                         turn_amount=SHIP_TURN_AMOUNT,
                          thrust=SHIP_THRUST_AMOUNT,
                          file=PLAYER_SHIP)
 
@@ -98,12 +98,25 @@ class Game(arcade.Window):
 
     def spawn_asteroids(self, count: int = 1):
         """ create asteroids to play with """
+        # define where asteroids can't spawn, i.e. within the ship's hitbox
+        too_close = self.ship.radius + BigMeteor.radius
+
         # Big Meteors
         for _ in range(count):
-            x = uniform(SCREEN_WIDTH // 8, (SCREEN_WIDTH * 7) // 8)
-            y = uniform(SCREEN_HEIGHT // 8, (SCREEN_HEIGHT * 7) // 8)
+            # reset start values
+            spawn_x = self.ship.center.x
+            spawn_y = self.ship.center.y
+
+            # find new ones far away
+            while (abs(self.ship.center.x - spawn_x) < too_close and
+                   abs(self.ship.center.y - spawn_y) < too_close):
+                spawn_x = uniform(SCREEN_WIDTH // 8, (SCREEN_WIDTH * 7) // 8)
+                spawn_y = uniform(SCREEN_HEIGHT // 8, (SCREEN_HEIGHT * 7) // 8)
+            # get a new angle
             angle = uniform(-180, 180)
-            self.asteroids.append(BigMeteor(x, y, angle))
+
+            # spawn the new meteor
+            self.asteroids.append(BigMeteor(spawn_x, spawn_y, angle))
 
     def on_draw(self):
         """
@@ -285,11 +298,11 @@ class Game(arcade.Window):
         """
         if arcade.key.LEFT in self.held_keys or arcade.key.A in self.held_keys:
             # rotate ship counterclockwise
-            self.ship.rotate(SHIP_TURN_AMOUNT)
+            self.ship.turn_left()
 
         if arcade.key.RIGHT in self.held_keys or arcade.key.D in self.held_keys:
             # rotate ship clockwise
-            self.ship.rotate(-SHIP_TURN_AMOUNT)
+            self.ship.turn_right()
 
         if arcade.key.UP in self.held_keys or arcade.key.W in self.held_keys:
             # move ship forward

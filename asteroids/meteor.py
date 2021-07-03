@@ -1,4 +1,5 @@
 from moving_objects import MovingObject
+from abc import ABC, abstractmethod
 
 # global constants
 BIG_ROCK_SPIN = 1
@@ -17,13 +18,15 @@ ROCK_MEDIUM = './images/meteorGrey_med1.png'
 ROCK_SMALL = './images/meteorGrey_small1.png'
 
 
-class Meteor(MovingObject):
+class Meteor(MovingObject, ABC):
     """ the abstract class for moving space rocks 
 
     rotation_speed : int
     move_speed : int
+
     - __init__() : None
     + hit() : int
+    - rotate() : None
     """
 
     def __init__(self, start_x, start_y, radius: int, turn_amount: int, thrust: int = BIG_ROCK_SPEED):
@@ -46,6 +49,7 @@ class Meteor(MovingObject):
         """ increment angle by rotation speed """
         self.angle += self.rotation_speed
 
+    @abstractmethod
     def hit(self):
         """ what happens when the meteor gets hit """
         pass
@@ -61,6 +65,9 @@ class BigMeteor(Meteor):
     - __init__() : None
     + hit() : int
     """
+
+    # for spawning in rocks
+    radius = BIG_ROCK_RADIUS
 
     def __init__(self, start_x, start_y, angle: float, radius: int = BIG_ROCK_RADIUS, turn_amount: int = BIG_ROCK_SPIN, file: str = ROCK_BIG):
         """ setup attributes """

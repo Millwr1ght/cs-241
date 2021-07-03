@@ -9,9 +9,10 @@ base class for moving objects for the asteroids.py arcade game
 from utilities import Point, Velocity
 from arcade import load_texture, draw_texture_rectangle, draw_circle_outline, color
 import math
+from abc import ABC
 
 
-class MovingObject:
+class MovingObject(ABC):
     """ These objects move across the playing field
     When they reach The Other Side, they: wrap
 
@@ -26,7 +27,6 @@ class MovingObject:
     __init__()
     advance() : None
     draw() : None
-    rotate() : None
     is_off_screen(width, height) : Boolean
     wrap_around(width, height) : None
     not_alive() : None
@@ -40,7 +40,7 @@ class MovingObject:
         self.alive = True
         self.radius = radius
         self._angle = angle
-        self.rotation_speed = 0
+
         self._texture_file = None  # reassign this in subclasses
 
     @property
@@ -76,10 +76,6 @@ class MovingObject:
         """ display self as just the hitbox """
         draw_circle_outline(
             self.center.x, self.center.y, self.radius, color.WHITE, 5)
-
-    def rotate(self):
-        """ increment angle by rotation speed """
-        pass
 
     def is_off_screen(self, width, height):
         """ checks if the object has left the premises 
