@@ -9,10 +9,10 @@ This program implements the asteroids game.
 """
 """ 
 Ideas of what to add:
- -- Sounds
  -- Explosion death animation
  -- Pause/Game Over screens
- -- Chance to spawn Medium asteroids
+ -- Turn off music when window closes
+
 """
 
 # .\images\
@@ -22,18 +22,30 @@ from random import uniform, randint
 from ship import Ship
 from meteor import BigMeteor
 from laser import Laser
+from music_player import MusicPlayer
 PLAYER_SHIP = './images/playerShip1_orange.png'
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITLE = 'Asteroids | Nathan Johnston'
+SCREEN_TITLE = 'Pysteroids | Nathan Johnston'
 
 SHIP_TURN_AMOUNT = 3
 SHIP_THRUST_AMOUNT = 0.25
 SHIP_RADIUS = 30
 
 INITIAL_ROCK_COUNT = 5
+
+# sound fx
+LASER_FIRE = './sounds/laser-fire.wav'
+ASTEROID_CRUNCH = './sounds/asteroid-crunch.wav'
+
+# background music
+MUSIC_VOLUME = 0.75
+SONG_LIST = [
+    "./sounds/Everpresence.mp3",
+    "./sounds/Genesis of the End.mp3"
+]
 
 
 class Game(arcade.Window):
@@ -76,6 +88,14 @@ class Game(arcade.Window):
 
         # game starts with five(5) Big Rocks
         self.spawn_asteroids(INITIAL_ROCK_COUNT)
+
+        # music
+        self.music_player = MusicPlayer(MUSIC_VOLUME, SONG_LIST)
+        self.music_player.setup()
+
+        # sound effects
+        self.laser_sound = arcade.load_sound(LASER_FIRE)
+        self.asteroid_sound = arcade.load_sound(ASTEROID_CRUNCH)
 
     def setup(self):
         """ Set up the game and initialize the variables. """
@@ -200,6 +220,12 @@ class Game(arcade.Window):
         if self.score > 160 and not randint(0, 999):
             self.spawn_asteroids()
 
+    def on_update(self, delta_time):
+        """ update the music player 
+        the arcade documentation says music updates go in on_update() instead of in update() 
+        """
+        self.music_player.update()
+
     def machine_gun(self):
         """ rata-tata-tat rata-tata-tat """
         self.firing_delay -= 1
@@ -213,6 +239,9 @@ class Game(arcade.Window):
         spawn_x, spawn_y = self.ship.get_laser_spawn_x_y()
         laser = Laser(spawn_x, spawn_y)
         laser.fire(self.ship.velocity, self.ship.angle)
+
+        # make laser sound here
+        arcade.play_sound(self.laser_sound)
 
         self.lasers.append(laser)
 
@@ -238,6 +267,9 @@ class Game(arcade.Window):
                         asteroid.not_alive()
                         score, new_meteors = asteroid.hit()
 
+                        # make asteroid crunch sound here
+                        arcade.play_sound(self.asteroid_sound)
+
                         # add to the score
                         self.score += score
 
@@ -245,7 +277,7 @@ class Game(arcade.Window):
                         for meteor in new_meteors:
                             self.asteroids.append(meteor)
 
-        # TODO: check if ship is touching any asteroid
+        # check if ship is touching any asteroid
         for asteroid in self.asteroids:
             if asteroid.alive and self.ship.alive:
                 too_close = asteroid.radius + self.ship.radius
@@ -325,11 +357,19 @@ class Game(arcade.Window):
             self.held_keys.add(key)
 
             if key == arcade.key.SPACE:
-                # TODO: Fire the laser here!
+                # Fire the laser here!
                 self.fire_laser()
 
             if key == arcade.key.RCTRL:
                 self.debug = not self.debug
+
+            if key == arcade.key.PERIOD:  # . or >
+                self.music_player.advance_song()
+                self.music_player.play_song()
+
+            if key == arcade.key.COMMA:  # , or <
+                self.music_player.go_back()
+                self.music_player.play_song()
 
     def on_key_release(self, key: int, modifiers: int):
         """
