@@ -11,8 +11,9 @@ This program implements the asteroids game.
 Ideas of what to add:
  -- Explosion death animation
  -- Pause/Game Over screens
- -- Turn off music when window closes
-
+ -- Lives system (3 to death sort of thing)
+ -- Turn off music when window closes? Why does it not turn off?
+ -- Save highscore in an external text/JSON file
 """
 
 # .\images\
