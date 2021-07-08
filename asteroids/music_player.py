@@ -21,7 +21,7 @@ class MusicPlayer:
     - __init__(): None
     + advance_song(): None
     + go_back(): None
-    - play_song(): None
+    + play_song(): None
     + setup(): None
     + update(): None
     """
@@ -45,7 +45,7 @@ class MusicPlayer:
     @current_song_index.setter
     def current_song_index(self, value):
         """ setter """
-        if self._current_song_index + value >= len(self.bgm_list):
+        if self._current_song_index + value > len(self.bgm_list):
             self._current_song_index = 0
         else:
             self._current_song_index = value
@@ -88,4 +88,4 @@ class MusicPlayer:
         # or if we are doing playing.
         if position == 0.0:
             self.advance_song()
-            self.play_song()
+            self.play_song() # make it go

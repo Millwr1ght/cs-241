@@ -44,6 +44,7 @@ ASTEROID_CRUNCH = './sounds/asteroid-crunch.wav'
 # background music
 MUSIC_VOLUME = 0.75
 SONG_LIST = [
+    "./sounds/No Place to Hide.mp3",
     "./sounds/Everpresence.mp3",
     "./sounds/Genesis of the End.mp3"
 ]
