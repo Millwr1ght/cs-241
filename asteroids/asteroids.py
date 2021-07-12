@@ -24,7 +24,7 @@ from ship import Ship
 from meteor import BigMeteor
 from laser import Laser
 from music_player import MusicPlayer
-PLAYER_SHIP = './images/playerShip1_orange.png'
+PLAYER_SHIP = './resouces/images/playerShip1_orange.png'
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
@@ -38,15 +38,15 @@ SHIP_RADIUS = 30
 INITIAL_ROCK_COUNT = 5
 
 # sound fx
-LASER_FIRE = './sounds/laser-fire.wav'
-ASTEROID_CRUNCH = './sounds/asteroid-crunch.wav'
+LASER_FIRE = './resouces/sounds/laser-fire.wav'
+ASTEROID_CRUNCH = './resouces/sounds/asteroid-crunch.wav'
 
 # background music
 MUSIC_VOLUME = 0.75
 SONG_LIST = [
-    "./sounds/No Place to Hide.mp3",
-    "./sounds/Everpresence.mp3",
-    "./sounds/Genesis of the End.mp3"
+    "./resouces/sounds/No Place to Hide.mp3",
+    "./resouces/sounds/Everpresence.mp3",
+    "./resouces/sounds/Genesis of the End.mp3"
 ]
 
 

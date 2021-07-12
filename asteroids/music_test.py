@@ -8,9 +8,9 @@ SCREEN_TITLE = 'Music test'
 # background music
 MUSIC_VOLUME = 0.75
 SONG_LIST = [
-    "asteroids\\sounds\\No Place to Hide.mp3",
-    "asteroids\\sounds\\Everpresence.mp3",
-    "asteroids\\sounds\\Genesis of the End.mp3"
+    "asteroids\\resouces\\sounds\\No Place to Hide.mp3",
+    "asteroids\\resouces\\sounds\\Everpresence.mp3",
+    "asteroids\\resources\\sounds\\Genesis of the End.mp3"
 ]
 
 
