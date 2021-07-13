@@ -1,4 +1,4 @@
-from moving_objects import MovingObject
+from resources.moving_objects import MovingObject
 
 
 class Ship(MovingObject):

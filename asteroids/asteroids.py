@@ -10,11 +10,12 @@ This program implements the asteroids game.
 import arcade
 from math import radians, sin, cos
 from random import uniform, randint
-from ship import Ship
-from meteor import BigMeteor
-from laser import Laser
-from music_player import MusicPlayer
+from resources.ship import Ship
+from resources.meteor import BigMeteor
+from resources.laser import Laser
+from resources.music_player import MusicPlayer
 from os import chdir  # for pyinstaller
+import sys  # also for pyinstaller
 """ 
 Ideas of what to add:
  -- Explosion death animation
@@ -111,7 +112,7 @@ class Game(arcade.Window):
                          radius=SHIP_RADIUS,
                          turn_amount=SHIP_TURN_AMOUNT,
                          thrust=SHIP_THRUST_AMOUNT,
-                         file=PLAYER_SHIP)
+                         file=SHIP_TEXTURE)
 
         # the lasers and asteroids
         self.lasers = []

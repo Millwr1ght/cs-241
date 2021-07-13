@@ -1,5 +1,5 @@
-from moving_objects import MovingObject
-import math
+from resources.moving_objects import MovingObject
+from math import radians, cos, sin
 
 # globals
 BULLET_RADIUS = 30
@@ -46,8 +46,8 @@ class Laser(MovingObject):
         shoot the laser based on the given angle, in degrees
         """
         angle = angle + 90
-        self.velocity.dx = ship_velocity.dx + math.cos(math.radians(
+        self.velocity.dx = ship_velocity.dx + cos(radians(
             angle)) * self.move_speed
-        self.velocity.dy = ship_velocity.dy + math.sin(math.radians(
+        self.velocity.dy = ship_velocity.dy + sin(radians(
             angle)) * self.move_speed
         self.angle = angle

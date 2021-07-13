@@ -6,7 +6,7 @@ base class for moving objects for the asteroids.py arcade game
 """
 
 # class and method imports
-from utilities import Point, Velocity
+from resources.utilities import Point, Velocity
 from arcade import load_texture, draw_texture_rectangle, draw_circle_outline, color
 import math
 from abc import ABC
