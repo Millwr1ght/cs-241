@@ -13,9 +13,9 @@ SMALL_ROCK_SPIN = 5
 SMALL_ROCK_RADIUS = 2
 
 # textures
-ROCK_BIG = './resouces/images/meteorGrey_big1.png'
-ROCK_MEDIUM = './resouces/images/meteorGrey_med1.png'
-ROCK_SMALL = './resouces/images/meteorGrey_small1.png'
+ROCK_BIG = './resources/images/meteorGrey_big1.png'
+ROCK_MEDIUM = './resources/images/meteorGrey_med1.png'
+ROCK_SMALL = './resources/images/meteorGrey_small1.png'
 
 
 class Meteor(MovingObject, ABC):

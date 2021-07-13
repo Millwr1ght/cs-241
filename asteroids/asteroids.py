@@ -3,50 +3,52 @@ File: asteroids.py
 Original Author: Br. Burton
 Designed to be completed by others
 
-Completed by: N Johnston
+Completed by: N Johnston, Millwr1ght
 
 This program implements the asteroids game.
 """
-""" 
-Ideas of what to add:
- -- Explosion death animation
- -- Pause/Game Over screens
- -- Lives system (3 to death sort of thing)
- -- Turn off music when window closes? Why does it not turn off?
- -- Save highscore in an external text/JSON file
-"""
-
-# .\images\
 import arcade
-import math
+from math import radians, sin, cos
 from random import uniform, randint
 from ship import Ship
 from meteor import BigMeteor
 from laser import Laser
 from music_player import MusicPlayer
-PLAYER_SHIP = './resouces/images/playerShip1_orange.png'
+from os import chdir  # for pyinstaller
+""" 
+Ideas of what to add:
+ -- Explosion death animation
+ -- Pause/Game Over screens
+ -- Lives system (maybe a 3-5 lives then death/game over sort of thing)
+ -- Save highscore in an external text/JSON file
+"""
+
+# for dealling with how pystaller operates
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    chdir(sys._MEIPASS)
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITLE = 'Pysteroids | Nathan Johnston'
+SCREEN_TITLE = 'Asteroids'
 
 SHIP_TURN_AMOUNT = 3
 SHIP_THRUST_AMOUNT = 0.25
 SHIP_RADIUS = 30
+SHIP_TEXTURE = './resources/images/playerShip1_orange.png'
 
 INITIAL_ROCK_COUNT = 5
 
 # sound fx
-LASER_FIRE = './resouces/sounds/laser-fire.wav'
-ASTEROID_CRUNCH = './resouces/sounds/asteroid-crunch.wav'
+LASER_FIRE = './resources/sounds/laser-fire.wav'
+ASTEROID_CRUNCH = './resources/sounds/asteroid-crunch.wav'
 
 # background music
 MUSIC_VOLUME = 0.75
 SONG_LIST = [
-    "./resouces/sounds/No Place to Hide.mp3",
-    "./resouces/sounds/Everpresence.mp3",
-    "./resouces/sounds/Genesis of the End.mp3"
+    "./resources/sounds/No Place to Hide.mp3",
+    "./resources/sounds/Everpresence.mp3",
+    "./resources/sounds/Genesis of the End.mp3"
 ]
 
 
@@ -84,7 +86,7 @@ class Game(arcade.Window):
                          radius=SHIP_RADIUS,
                          turn_amount=SHIP_TURN_AMOUNT,
                          thrust=SHIP_THRUST_AMOUNT,
-                         file=PLAYER_SHIP)
+                         file=SHIP_TEXTURE)
         self.lasers = []
         self.asteroids = []
 
@@ -387,10 +389,10 @@ class Game(arcade.Window):
         particularly from the angle and a length 
         so we can spawn lasers at the end of the ship
         """
-        angle_radians = math.radians(angle)
+        angle_radians = radians(angle)
 
-        x = length * math.cos(angle_radians)
-        y = length * math.sin(angle_radians)
+        x = length * cos(angle_radians)
+        y = length * sin(angle_radians)
 
         return x, y
 

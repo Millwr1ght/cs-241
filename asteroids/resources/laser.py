@@ -7,7 +7,7 @@ BULLET_SPEED = 10
 BULLET_LIFE = 60
 
 # texture
-LASER = './resouces/images/laserBlue01.png'
+LASER = './resources/images/laserBlue01.png'
 
 
 class Laser(MovingObject):
