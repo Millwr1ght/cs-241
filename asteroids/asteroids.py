@@ -14,8 +14,6 @@ from resources.ship import Ship
 from resources.meteor import BigMeteor
 from resources.laser import Laser
 from resources.music_player import MusicPlayer
-from os import chdir  # for pyinstaller
-import sys  # also for pyinstaller
 """ 
 Ideas of what to add:
  -- Explosion death animation
@@ -23,10 +21,6 @@ Ideas of what to add:
  -- Lives system (maybe a 3-5 lives then death/game over sort of thing)
  -- Save highscore in an external text/JSON file
 """
-
-# for dealling with how pystaller operates
-if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    chdir(sys._MEIPASS)
 
 # These are Global constants to use throughout the game
 SCREEN_WIDTH = 800
