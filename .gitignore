@@ -1,2 +1,9 @@
-
+*.zip
 *.txt
+*.toc
+*.pyc
+*.dll
+*.pyd
+dist/
+build/
+pyinstaller_tutorial/

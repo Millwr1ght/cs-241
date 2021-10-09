@@ -1,4 +1,11 @@
 """
+scripts for pyinstaller
+"""
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
+
+"""
 File: asteroids.py
 Original Author: Br. Burton
 Designed to be completed by others
@@ -7,13 +14,15 @@ Completed by: N Johnston, Millwr1ght
 
 This program implements the asteroids game.
 """
-import arcade
-from math import radians, sin, cos
-from random import uniform, randint
-from resources.ship import Ship
-from resources.meteor import BigMeteor
-from resources.laser import Laser
+    
 from resources.music_player import MusicPlayer
+from resources.laser import Laser
+from resources.meteor import BigMeteor
+from resources.ship import Ship
+from random import uniform, randint
+from math import radians, sin, cos
+import arcade
+
 """ 
 Ideas of what to add:
  -- Explosion death animation
